@@ -150,10 +150,6 @@ class GLMService:
 
             try:
 
-                for i, image in enumerate(images):
-                    self.ui(f"Image {i} :", type(image))
-
-
                 response = self.client.chat.completions.create(
 
                     model=self.vision_model,
@@ -170,7 +166,8 @@ class GLMService:
                     ]
                 )
 
-                print("📥 Réponse Vision reçue")
+                if self.ui:
+                    self.ui.log("📥 Réponse Vision reçue")
 
                 text = response.choices[0].message.content
 
@@ -182,13 +179,15 @@ class GLMService:
 
                 if attempt < self.MAX_RETRY - 1:
 
-                    self.ui.log(
-                        f"⏳ GLM est actuellement surchargé."
-                    )
+                    if self.ui:
 
-                    self.ui.log(
-                        f"🔄 Nouvelle tentative dans {wait} secondes..."
-                    )
+                        self.ui.log(
+                            f"⏳ GLM est actuellement surchargé."
+                        )
+
+                        self.ui.log(
+                            f"🔄 Nouvelle tentative dans {wait} secondes..."
+                        )
 
                     time.sleep(wait)
 
@@ -216,6 +215,12 @@ class GLMService:
                     "GLM n'a pas répondu après 60 secondes."
                 )
             
+            except Exception as e:
+
+                if self.ui:
+                    self.ui.log(f"❌ Erreur GLM Vision : {e}")
+
+                raise
 
     def debug(self, message):
 
@@ -223,3 +228,10 @@ class GLMService:
 
         if self.ui:
             self.ui.log(message)
+
+    def log(self, message):
+
+        if self.ui:
+            self.ui.log(message)
+        else:
+            print(message)

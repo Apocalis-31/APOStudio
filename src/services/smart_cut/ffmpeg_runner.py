@@ -19,6 +19,8 @@ class FFmpegRunner:
 
         if not plans:
             return
+        
+        self.ui.log("✂️ Début du découpage des épisodes...")
 
         for plan in plans:
 
@@ -27,6 +29,8 @@ class FFmpegRunner:
                 plan,
                 settings
             )
+
+        self.ui.log("✅ Découpage terminé.")
 
     # ==========================================
 
@@ -93,7 +97,12 @@ class FFmpegRunner:
             "⚡ Mode : Découpe instantanée"
         )
 
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
         subprocess.run(
             command,
-            check=True
+            check=True,
+            startupinfo=startupinfo,
+            creationflags=subprocess.CREATE_NO_WINDOW
         )

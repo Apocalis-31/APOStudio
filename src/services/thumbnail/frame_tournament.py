@@ -37,14 +37,21 @@ class FrameTournament:
 
         winners = []
 
-        glm = GLMService()
+        glm = GLMService(self.ui)
 
         for index, group in enumerate(groups, start=1):
+
+            
+            self.ui.log(f"🥊 Groupe {index}/{len(groups)}")
+            self.ui.log("📤 Appel à GLM...")
+
 
             response = glm.ask_vision(
                 prompt,
                 group
             )
+
+            self.ui.log("📥 Réponse reçue")
 
             ranking = response["ranking"]
 

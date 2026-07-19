@@ -2,6 +2,7 @@ import customtkinter as ctk
 from pathlib import Path
 from ui.home_page import HomePage
 from services.path_service import PathService
+from app_info import VERSION
 
 
 ctk.set_appearance_mode("dark")
@@ -19,6 +20,8 @@ class ApoStudio(ctk.CTk):
 
         screen_w = self.winfo_screenwidth()
         screen_h = self.winfo_screenheight()
+
+        self.title(f"APO Studio {VERSION}")
 
         width = min(self.WINDOW_WIDTH, int(screen_w * 0.90))
         height = min(self.WINDOW_HEIGHT, int(screen_h * 0.90))
