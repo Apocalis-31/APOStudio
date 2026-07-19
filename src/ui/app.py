@@ -3,6 +3,7 @@ from pathlib import Path
 from ui.home_page import HomePage
 from services.path_service import PathService
 
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 

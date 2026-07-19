@@ -12,6 +12,7 @@ from core.session_statistics import SessionStatistics
 from pathlib import Path
 import os
 from services.path_service import PathService
+from ui.widgets.update_banner import UpdateBanner
 
 import time
 
@@ -52,6 +53,8 @@ class HomePage(ctk.CTkFrame):
 
         self.build_header()
 
+        self.build_banner()
+
         self.build_dashboard()
 
         self.build_console()
@@ -67,6 +70,16 @@ class HomePage(ctk.CTkFrame):
         self.header_frame = ctk.CTkFrame(
             self,
             fg_color="transparent"
+        )
+
+        self.banner_frame = ctk.CTkFrame(
+            self,
+            fg_color="transparent"
+        )
+
+        self.banner_frame.pack(
+            fill="x",
+            padx=25
         )
 
         self.dashboard_frame = ctk.CTkFrame(
@@ -624,4 +637,12 @@ class HomePage(ctk.CTkFrame):
         self.after(
             1000,
             self.update_session_timer
+        )
+
+    def build_banner(self):
+
+        self.update_banner = UpdateBanner(self.banner_frame)
+
+        self.update_banner.pack(
+            fill="x"
         )
