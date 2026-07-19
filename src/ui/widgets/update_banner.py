@@ -1,9 +1,12 @@
 import customtkinter as ctk
+from services.update_install_service import UpdateInstallService
 
 
 class UpdateBanner(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent, corner_radius=12)
+
+        self.info = None
 
         self.grid_columnconfigure(0, weight=1)
 
@@ -33,4 +36,21 @@ class UpdateBanner(ctk.CTkFrame):
         self.update_button.grid(row=0, column=1, rowspan=2, padx=20, pady=20)
 
     def on_update(self):
-        print("Update clicked")
+
+        if self.info is None:
+            return
+
+        UpdateInstallService.install(self.info)
+
+    def set_update_info(self, info):
+
+        self.update_button.configure(state="normal")
+
+        self.info = info
+
+        self.info_label.configure(
+            text=(
+                f"Version actuelle : {info.current_version}\n"
+                f"Dernière version : {info.latest_version}"
+            )
+        )

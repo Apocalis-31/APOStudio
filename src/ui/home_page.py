@@ -13,6 +13,7 @@ from pathlib import Path
 import os
 from services.path_service import PathService
 from ui.widgets.update_banner import UpdateBanner
+from services.update_service import UpdateService
 
 import time
 
@@ -75,11 +76,6 @@ class HomePage(ctk.CTkFrame):
         self.banner_frame = ctk.CTkFrame(
             self,
             fg_color="transparent"
-        )
-
-        self.banner_frame.pack(
-            fill="x",
-            padx=25
         )
 
         self.dashboard_frame = ctk.CTkFrame(
@@ -641,8 +637,20 @@ class HomePage(ctk.CTkFrame):
 
     def build_banner(self):
 
+        info = UpdateService.check()
+
+        if not info.has_update:
+            return
+
+        self.banner_frame.pack(
+            fill="x",
+            padx=25,
+            pady=(0, 10),
+            after=self.header_frame
+        )
+
         self.update_banner = UpdateBanner(self.banner_frame)
 
-        self.update_banner.pack(
-            fill="x"
-        )
+        self.update_banner.set_update_info(info)
+
+        self.update_banner.pack(fill="x")
