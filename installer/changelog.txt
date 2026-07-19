@@ -1,0 +1,40 @@
+APO Studio 1.0.0
+=================
+
+Merci d'utiliser APO Studio !
+
+Nouveautés de la version 1.0.0
+------------------------------
+
+✓ Création automatique de projets
+
+✓ Transcription locale avec Whisper (GPU / CPU)
+
+✓ Génération automatique des informations YouTube
+
+✓ Génération d'introduction
+
+✓ Génération de propositions de miniatures
+
+✓ Sélection intelligente des captures par IA
+
+✓ SmartCut IA pour le découpage automatique
+
+✓ Découpage vidéo avec FFmpeg
+
+✓ Traitement en lot
+
+✓ Workflow personnalisable
+
+✓ Support de plusieurs fournisseurs d'IA :
+  - OpenAI
+  - GLM
+  - Ollama
+
+✓ Installateur Windows
+
+------------------------------------------------
+
+Merci d'avoir choisi APO Studio !
+
+© 2026 APO Studio

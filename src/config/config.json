@@ -1,0 +1,28 @@
+{
+    "ai": {
+        "provider": "glm"
+    },
+    "openai": {
+        "api_key": "",
+        "model": "gpt-5.5"
+    },
+    "claude": {
+        "api_key": "",
+        "model": "claude-sonnet-4"
+    },
+    "ollama": {
+        "url": "http://localhost:11434",
+        "model": "qwen2.5:7b",
+        "api_key": "http://localhost:11434"
+    },
+    "lmstudio": {
+        "url": "http://localhost:1234/v1",
+        "model": ""
+    },
+    "glm": {
+        "api_key": "",
+        "base_url": "https://api.z.ai/api/paas/v4/",
+        "model": "glm-4.7-flash",
+        "vision_model": "glm-4.6v-flash"
+    }
+}

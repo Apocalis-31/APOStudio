@@ -1,0 +1,65 @@
+APO Studio - Contrat de licence utilisateur (EULA)
+
+Version 1.0.0
+
+Copyright © 2026 APO Studio.
+Tous droits réservés.
+
+------------------------------------------------------------
+
+1. OBJET
+
+Le présent logiciel, APO Studio, est fourni afin de faciliter la
+préparation de contenus YouTube à l'aide de différents outils
+d'intelligence artificielle.
+
+L'installation ou l'utilisation du logiciel implique l'acceptation
+des présentes conditions.
+
+------------------------------------------------------------
+
+2. UTILISATION
+
+Vous êtes autorisé à installer et utiliser APO Studio sur vos
+ordinateurs personnels.
+
+Il est interdit de redistribuer, modifier ou revendre le logiciel
+sans l'autorisation écrite de son auteur.
+
+------------------------------------------------------------
+
+3. RESPONSABILITÉ
+
+Le logiciel est fourni "tel quel", sans garantie d'aucune sorte.
+
+L'auteur ne pourra être tenu responsable des pertes de données,
+dommages matériels ou conséquences résultant de l'utilisation du
+logiciel.
+
+L'utilisateur reste entièrement responsable des contenus qu'il
+produit et publie à l'aide d'APO Studio.
+
+------------------------------------------------------------
+
+4. SERVICES D'IA
+
+Certaines fonctionnalités utilisent des services d'intelligence
+artificielle fournis par des tiers (OpenAI, GLM, Ollama ou autres).
+
+Leur disponibilité, leurs performances et leur politique tarifaire
+relèvent exclusivement de leurs fournisseurs respectifs.
+
+------------------------------------------------------------
+
+5. ÉVOLUTION DU LOGICIEL
+
+APO Studio pourra évoluer au fil des mises à jour.
+
+Les présentes conditions pourront être modifiées dans les versions
+ultérieures.
+
+------------------------------------------------------------
+
+Merci d'utiliser APO Studio.
+
+© 2026 APO Studio

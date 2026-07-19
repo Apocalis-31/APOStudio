@@ -1,0 +1,21 @@
+{
+    "ai": {
+        "provider": "openai"
+    },
+    "openai": {
+        "api_key": "",
+        "model": "gpt-5.5"
+    },
+    "claude": {
+        "api_key": "",
+        "model": "claude-sonnet-4"
+    },
+    "ollama": {
+        "url": "http://localhost:11434",
+        "model": "llama3.2"
+    },
+    "lmstudio": {
+        "url": "http://localhost:1234/v1",
+        "model": ""
+    }
+}
