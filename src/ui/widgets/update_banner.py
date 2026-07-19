@@ -1,9 +1,12 @@
 import customtkinter as ctk
 from services.update_install_service import UpdateInstallService
+from workers.update_download_worker import UpdateDownloadWorker
 
 
 class UpdateBanner(ctk.CTkFrame):
+    
     def __init__(self, parent):
+
         super().__init__(parent, corner_radius=12)
 
         self.info = None
@@ -40,7 +43,11 @@ class UpdateBanner(ctk.CTkFrame):
         if self.info is None:
             return
 
-        UpdateInstallService.install(self.info)
+        try:
+            UpdateDownloadWorker(self.info).start()
+
+        except Exception as e:
+            print(e)
 
     def set_update_info(self, info):
 
