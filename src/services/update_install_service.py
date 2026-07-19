@@ -31,10 +31,9 @@ class UpdateInstallService:
 
                     installer.write(chunk)
 
-        if os.path.exists(installer_path):
+            if not os.path.exists(installer_path):
+                raise RuntimeError("Le téléchargement de la mise à jour a échoué.")
 
             print("Téléchargement terminé !")
 
-        else:
-
-            print("Erreur de téléchargement")
+            return installer_path

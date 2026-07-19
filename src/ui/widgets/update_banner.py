@@ -44,7 +44,13 @@ class UpdateBanner(ctk.CTkFrame):
             return
 
         try:
-            UpdateDownloadWorker(self.info).start()
+
+            root = self.winfo_toplevel()
+
+            UpdateDownloadWorker(
+                self.info,
+                lambda: root.after(0, root.destroy)
+            ).start()
 
         except Exception as e:
             print(e)

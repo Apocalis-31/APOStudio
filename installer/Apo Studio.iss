@@ -12,8 +12,7 @@ WizardImageFile=..\assets\branding\wizard.bmp
 WizardSmallImageFile=..\assets\branding\wizard_small.bmp
 LicenseFile=license.txt
 InfoAfterFile=changelog.txt
-VersionInfoVersion=1.0.0.0
-VersionInfoCompany=APO Studio
+VersionInfoVersion={#MyAppVersion}.0VersionInfoCompany=APO Studio
 VersionInfoDescription=Assistant de création YouTube
 VersionInfoProductName=APO Studio
 VersionInfoCopyright=© 2026 APO Studio
@@ -24,8 +23,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 
 OutputDir=output
-OutputBaseFilename=APOStudio_Setup_1.0.0
-
+OutputBaseFilename=APOStudio_Setup_{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
