@@ -45,6 +45,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon="assets/branding/logo_transparence_AS.ico",
+    version="version_info.txt",
 )
 coll = COLLECT(
     exe,
