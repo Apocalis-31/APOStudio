@@ -34,12 +34,7 @@ class WhisperService:
 
         self.ui.log("🎙️ Chargement du modèle Whisper...")
 
-        self.model = WhisperModel(
-            "small",
-            device="cuda",
-            compute_type="float16"
-        )
-
+        self.ui.log("🔍 Détection du mode Whisper...")
 
         try:
 
@@ -52,6 +47,8 @@ class WhisperService:
             self.ui.log("🚀 Whisper GPU (CUDA)")
 
         except Exception as e:
+
+            self.ui.log(f"⚠️ CUDA indisponible : {e}")
 
             message = str(e).lower()
 
