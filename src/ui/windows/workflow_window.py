@@ -9,11 +9,19 @@ class WorkflowWindow(ctk.CTkToplevel):
 
         super().__init__(master)
 
+        # Associer la fenêtre à APO Studio
+        self.transient(master)
+
+        # Fenêtre modale
+        self.grab_set()
+
+        # Premier plan
+        self.lift()
+        self.focus_force()
+
         self.title("Workflow")
         self.geometry("700x620")
         self.resizable(False, False)
-        self.grab_set()
-
 
         # ==========================
         # Variables

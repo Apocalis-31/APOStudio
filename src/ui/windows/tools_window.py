@@ -15,14 +15,21 @@ class ToolsWindow(ctk.CTkToplevel):
 
         super().__init__(master)
 
-        self.home = master
+        # Associer la fenêtre à APO Studio
+        self.transient(master)
 
+        # Fenêtre modale
+        self.grab_set()
+
+        # Premier plan
+        self.lift()
+        self.focus_force()
+
+        self.home = master
         self.ui = ui
 
         self.title("Outils")
-
         self.geometry("550x400")
-
         self.resizable(False, False)
 
         self.build()

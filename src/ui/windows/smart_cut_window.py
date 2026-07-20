@@ -20,6 +20,16 @@ class SmartCutWindow(ctk.CTkToplevel):
 
         super().__init__(master)
 
+        # Associer la fenêtre à APO Studio
+        self.transient(master)
+
+        # Fenêtre modale
+        self.grab_set()
+
+        # Premier plan
+        self.lift()
+        self.focus_force()
+
         self.project = project
         self.ui = ui
 

@@ -11,6 +11,16 @@ class SettingsWindow(ctk.CTkToplevel):
 
         super().__init__(master)
 
+        # Associer cette fenêtre à la fenêtre principale
+        self.transient(master)
+
+        # La placer immédiatement au premier plan
+        self.lift()
+        self.focus_force()
+
+        # Fenêtre modale
+        self.grab_set()
+
         # ------------------------
         # Configuration
         # ------------------------
@@ -265,8 +275,9 @@ class SettingsWindow(ctk.CTkToplevel):
 
     def browse_projects(self):
 
-        folder = filedialog.askdirectory()
-
+        folder = filedialog.askdirectory(
+            parent=self
+        )
         if folder:
 
             self.projects_entry.delete(0, "end")
