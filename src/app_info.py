@@ -1,5 +1,8 @@
 APP_NAME = "APO Studio"
-VERSION = "1.0.1"
+COMPANY = "APO Studio"
+AUTHOR = "Apocalis"
+COPYRIGHT = "© Apocalis"
 
+VERSION = "1.0.3"
 GITHUB_OWNER = "Apocalis-31"
 GITHUB_REPOSITORY = "APOStudio"

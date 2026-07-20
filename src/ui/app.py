@@ -3,6 +3,11 @@ from pathlib import Path
 from ui.home_page import HomePage
 from services.path_service import PathService
 from app_info import VERSION
+import ctypes
+
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+    "ApoStudio.APOStudio"
+)
 
 
 ctk.set_appearance_mode("dark")
@@ -13,8 +18,10 @@ class ApoStudio(ctk.CTk):
 
     WINDOW_WIDTH = 1100
     WINDOW_HEIGHT = 850
+    
 
     def __init__(self):
+        
 
         super().__init__()
 
