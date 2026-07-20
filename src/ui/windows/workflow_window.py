@@ -19,7 +19,7 @@ class WorkflowWindow(ctk.CTkToplevel):
         self.lift()
         self.focus_force()
 
-        self.title("Workflow")
+        self.title("Workflow - APO Studio")
         self.geometry("700x620")
         self.resizable(False, False)
 

@@ -33,7 +33,7 @@ class SmartCutWindow(ctk.CTkToplevel):
         self.project = project
         self.ui = ui
 
-        self.title("Découpage intelligent")
+        self.title("Découpage intelligent - APO Studio")
         self.geometry("650x750")
 
         # ======================================

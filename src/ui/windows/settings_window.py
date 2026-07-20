@@ -44,7 +44,7 @@ class SettingsWindow(ctk.CTkToplevel):
         # Fenêtre
         # ------------------------
 
-        self.title("Paramètres")
+        self.title("Paramètres - APO Studio")
         self.geometry("650x550")
         self.resizable(False, False)
         self.grab_set()

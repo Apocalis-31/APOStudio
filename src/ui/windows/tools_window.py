@@ -28,7 +28,7 @@ class ToolsWindow(ctk.CTkToplevel):
         self.home = master
         self.ui = ui
 
-        self.title("Outils")
+        self.title("Outils - APO Studio")
         self.geometry("550x400")
         self.resizable(False, False)
 

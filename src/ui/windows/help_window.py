@@ -8,17 +8,23 @@ class HelpWindow(ctk.CTkToplevel):
 
         super().__init__(master)
 
+        # Associe la fenêtre à la fenêtre principale
+        self.transient(master)
+
+        # Empêche l'utilisateur d'interagir avec la fenêtre principale
+        self.grab_set()
+
+        # Place la fenêtre au premier plan
+        self.lift()
+        self.focus_force()
+
         self.title("Aide - APO Studio")
-
         self.geometry("1000x700")
-
         self.minsize(1000, 700)
 
         self.navigation_buttons = {}
 
         self.build()
-
-    # ==================================================
 
     def build(self):
 
