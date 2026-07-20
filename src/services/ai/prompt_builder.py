@@ -19,8 +19,6 @@ class PromptBuilder:
         # SYSTEM
         # ==========================
 
-        print(f"🧠 PromptBuilder : {provider}")
-
         if provider == "ollama":
             system_prompt = self.read_prompt("youtube_prompt_ollama.md")
 
@@ -39,14 +37,33 @@ class PromptBuilder:
         if provider == "ollama":
 
             user_sections.append(self.read("channel.md"))
-            user_sections.append(self.read("intro_style.md"))
+            intro = self.read("intro_style.md")
+
+            intro += "\n\n"
+
+            intro += self.read_user_prompt(
+                "intro_user.md"
+            )
+
+            user_sections.append(intro)            
             user_sections.append(self.read("personality.md"))
 
         else:
 
             user_sections.append(self.read("channel.md"))
             user_sections.append(self.read("personality.md"))
-            user_sections.append(self.read("intro_style.md"))
+            intro = self.read("intro_style.md")
+
+            intro += "\n\n"
+
+            system_prompt = self.read_prompt("youtube_prompt_glm.md")
+
+            intro = self.read("intro_style.md")
+            intro += "\n\n"
+            intro += self.read_user_prompt("intro_user.md")
+
+            system_prompt += "\n\n# Préférences du créateur\n\n"
+            system_prompt += intro       
             user_sections.append(self.read("thumbnail_style.md"))
             user_sections.append(self.read("forbidden.md"))
             user_sections.append(self.read("youtube_hook.md"))
@@ -67,7 +84,6 @@ class PromptBuilder:
             user_sections.append(f.read())
 
         user_prompt = "\n\n".join(user_sections)
-
 
         return Prompt(
             system=system_prompt,
@@ -151,3 +167,23 @@ class PromptBuilder:
                 user="\n\n".join(user_sections)
 
             )
+
+    def read_user_prompt(self, filename):
+
+        path = (
+            PathService.user_prompts()
+            / filename
+        )
+
+        if not path.exists():
+
+            path.write_text(
+                "",
+                encoding="utf-8"
+            )
+
+            return ""
+
+        return path.read_text(
+            encoding="utf-8"
+        )

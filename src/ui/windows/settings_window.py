@@ -226,10 +226,6 @@ class SettingsWindow(ctk.CTkToplevel):
             self.model_entry.get()
         )
 
-        print("Provider :", provider)
-        print("API :", self.api_entry.get())
-        print("Model :", self.model_entry.get())
-        print(self.config_service.data)
 
         self.config_service.set(
             "paths.projects",

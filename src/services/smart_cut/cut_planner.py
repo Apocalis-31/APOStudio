@@ -56,7 +56,6 @@ class CutPlanner:
 
             else:
 
-                print(f"\n=== Recherche vers {next_cut:.1f}s ===")
 
                 candidate = GapSelector().select(
                     candidates,
@@ -65,7 +64,6 @@ class CutPlanner:
                     current_start
                 )
 
-                print(f"Choix retenu : {candidate.timestamp:.1f}s")
 
             if candidate is None:
                 break

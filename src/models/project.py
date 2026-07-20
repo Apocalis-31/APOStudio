@@ -49,8 +49,6 @@ class Project:
             video_path=Path(data["video_path"])
 
         )
-        print(data["episode"])
-        print(type(data["episode"]))
 
         if data.get("project_path"):
 

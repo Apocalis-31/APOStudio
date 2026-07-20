@@ -29,9 +29,17 @@ L'introduction doit donner envie de découvrir la suite sans révéler les momen
 - Utilise uniquement les informations présentes dans le transcript.
 - Si le genre du jeu n'est pas mentionné, n'en invente pas un.
 
-# Structure de l'introduction
+# Style de l'introduction
 
-L'introduction suit toujours cette structure :
+Le créateur peut fournir des préférences de rédaction.
+
+Ces préférences sont PRIORITAIRES sur le style par défaut.
+
+Si des préférences personnalisées sont présentes, tu dois les appliquer à la place du style par défaut, tant qu'elles ne contredisent pas les règles ci-dessus.
+
+Si aucune préférence n'est fournie, utilise le style par défaut décrit ci-dessous.
+
+# Structure par défaut
 
 Bonjour à toutes et à tous.
 
@@ -42,8 +50,6 @@ Dans cet épisode, ...
 N'hésite pas à liker la vidéo et à t'abonner pour ne manquer aucune sortie VOD de la chaîne.
 
 Bon visionnage et Keur Keur sur toi ❤️
-
-
 
 La partie "Dans cet épisode..." doit être rédigée comme une narration fluide et non comme une succession de faits.
 

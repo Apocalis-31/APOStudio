@@ -199,8 +199,6 @@ class WorkflowWindow(ctk.CTkToplevel):
         if self.vision.get():
             workflow.enabled.append("vision")  
 
-        print(workflow.enabled)          
-
         WorkflowConfig().save(workflow)
 
         self.destroy()

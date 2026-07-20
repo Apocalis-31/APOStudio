@@ -5,12 +5,19 @@ from services.ai.glm_service import GLMService
 from services.thumbnail.frame_tournament import FrameTournament
 from services.ai.glm_parser import GLMParser
 from services.path_service import PathService
+import cv2
+
+VISION_MAX_SIZE = 512
+
+
 
 class FrameVision:
 
     def __init__(self, ui):
 
         self.ui = ui
+
+
 
     # =====================================================
 
@@ -43,11 +50,12 @@ class FrameVision:
 
     # =====================================================
 
+
     def _encode_images(
         self,
         frames
     ):
-
+        
         self.ui.log(
             f"📦 Encodage de {len(frames)} captures..."
         )
@@ -56,16 +64,49 @@ class FrameVision:
 
         for frame in frames:
 
-            with open(frame, "rb") as f:
+            image = cv2.imread(str(frame))
 
-                images.append(
-                    {
-                        "path": frame,
-                        "base64": base64.b64encode(
-                            f.read()
-                        ).decode("utf-8")
-                    }
+            height, width = image.shape[:2]
+
+            scale = min(
+                VISION_MAX_SIZE / width,
+                VISION_MAX_SIZE / height,
+                1.0
+            )
+
+            if scale < 1.0:
+
+                new_width = int(width * scale)
+                new_height = int(height * scale)
+
+                image = cv2.resize(
+                    image,
+                    (new_width, new_height),
+                    interpolation=cv2.INTER_AREA
                 )
+
+            success, buffer = cv2.imencode(
+                ".png",
+                image
+            )
+
+            self.ui.log(
+                f"{Path(frame).name} -> {len(buffer.tobytes()) / 1024:.1f} Ko"
+            )
+
+            if not success:
+                raise Exception(
+                    f"Impossible d'encoder : {frame}"
+                )
+
+            images.append(
+                {
+                    "path": frame,
+                    "base64": base64.b64encode(
+                        buffer.tobytes()
+                    ).decode("utf-8")
+                }
+            )
 
         return images
 

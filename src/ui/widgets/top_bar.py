@@ -4,6 +4,7 @@ from ui.windows.settings_window import SettingsWindow
 from ui.windows.workflow_window import WorkflowWindow
 from ui.windows.tools_window import ToolsWindow
 from ui.windows.help_window import HelpWindow
+from ui.windows.ai_style_window import AIStyleWindow
 
 
 class TopBar(ctk.CTkFrame):
@@ -72,9 +73,21 @@ class TopBar(ctk.CTkFrame):
             command=self.open_help
         )
 
+        self.ai_style_button = ctk.CTkButton(
+            self,
+            text="🎭",
+            width=36,
+            height=36,
+            fg_color="transparent",
+            hover_color="#3A3A3A",
+            font=("Segoe UI Emoji", 18),
+            command=self.open_ai_style
+        )
+
         # Plus d'espace entre les boutons
         self.projects_button.pack(side="left", padx=8)
         self.workflow_button.pack(side="left", padx=8)
+        self.ai_style_button.pack(side="left", padx=8)
         self.tools_button.pack(side="left", padx=8)
         self.settings_button.pack(side="left", padx=8)
         self.help_button.pack(side="left", padx=8)
@@ -92,3 +105,6 @@ class TopBar(ctk.CTkFrame):
 
     def open_help(self):
         HelpWindow(self.home)
+
+    def open_ai_style(self):
+        AIStyleWindow(self.home)

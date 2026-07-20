@@ -478,11 +478,6 @@ class SmartCutWindow(ctk.CTkToplevel):
 
         except subprocess.CalledProcessError as e:
 
-            print("===== FFPROBE ERROR =====")
-            print("COMMAND :", command)
-            print("STDOUT :", e.stdout)
-            print("STDERR :", e.stderr)
-            print("=========================")
             raise
 
         data = json.loads(result.stdout)

@@ -14,11 +14,9 @@ class ProjectStorage:
 
         root = PathService.projects()
 
-        print(f"[ProjectStorage] Root = {root}")
 
         series_folder = root / project.series
 
-        print(f"[ProjectStorage] Project = {series_folder}")
 
         if project.episode:
             project_folder = series_folder / f"Episode {project.episode}"

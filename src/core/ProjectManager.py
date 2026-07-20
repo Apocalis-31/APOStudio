@@ -35,8 +35,7 @@ class ProjectManager:
 
         parsed = parser.parse(video_path)
 
-        print(parsed)
-        print(type(parsed["episode"]))
+
 
         project = Project(
             name=name,
@@ -52,8 +51,7 @@ class ProjectManager:
         ui.log("📁 Création du projet...")
         ui.step("project")
 
-        print("VIDEO =", project.video_path)
-        print("PROJECT =", project.project_path)
+
 
         storage.save(project)
 
@@ -76,9 +74,6 @@ class ProjectManager:
             else:
 
                 whisper = WhisperService(ui=ui)
-                print("AVANT WHISPER")
-                print("VIDEO =", project.video_path)
-                print("PROJECT =", project.project_path)
                 whisper.transcribe(project)
 
         # ==========================================

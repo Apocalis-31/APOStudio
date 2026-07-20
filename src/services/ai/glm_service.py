@@ -127,7 +127,7 @@ class GLMService:
         prompt,
         images
     ):
-        
+        self.debug("➡️ Entrée dans ask_vision()")
 
         content = [
             {
@@ -149,6 +149,9 @@ class GLMService:
         for attempt in range(self.MAX_RETRY):
 
             try:
+
+                self.debug("🚀 Création de la requête OpenAI")
+
 
                 response = self.client.chat.completions.create(
 

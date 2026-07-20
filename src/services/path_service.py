@@ -48,6 +48,18 @@ class PathService:
         path.mkdir(parents=True, exist_ok=True)
 
         return path
+    
+
+    @staticmethod
+    def user_prompts() -> Path:
+
+        path = PathService.appdata() / "prompts"
+        path.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        return path
 
     @staticmethod
     def projects() -> Path:
@@ -67,8 +79,6 @@ class PathService:
             parents=True,
             exist_ok=True
         )
-
-        print(f"[PathService] Projects = {path}")
 
         return path
 

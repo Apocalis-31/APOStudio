@@ -14,7 +14,6 @@ class UpdateInstallService:
             "APOStudio_Setup.exe"
         )
 
-        print(installer_path)
 
         response = requests.get(
             update_info.download_url,
@@ -34,6 +33,5 @@ class UpdateInstallService:
             if not os.path.exists(installer_path):
                 raise RuntimeError("Le téléchargement de la mise à jour a échoué.")
 
-            print("Téléchargement terminé !")
 
             return installer_path

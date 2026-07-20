@@ -5,6 +5,15 @@ import time
 
 ROOT = Path(__file__).resolve().parent.parent
 
+PYINSTALLER_SPEC = "APO Studio.spec"
+
+INNO_SETUP = (
+    r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+)
+
+INSTALLER_SCRIPT = (
+    ROOT / "installer" / "Apo Studio.iss"
+)
 
 def run_step(title: str, command: list[str]) -> None:
     print(f"\n▶ {title}")
@@ -41,7 +50,15 @@ def main():
             "-m",
             "PyInstaller",
             "--clean",
-            "APO Studio.spec",
+            PYINSTALLER_SPEC,
+        ],
+    )
+
+    run_step(
+        "Build installer",
+        [
+            INNO_SETUP,
+            str(INSTALLER_SCRIPT),
         ],
     )
 

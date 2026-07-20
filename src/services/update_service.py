@@ -19,7 +19,6 @@ class UpdateService:
         except requests.RequestException as e:
             raise RuntimeError(f"Impossible de contacter GitHub : {e}")
 
-        print(response.status_code)
 
         if response.status_code == 404:
 
