@@ -92,16 +92,10 @@ def update_installer_version(root: Path):
 
     iss_file.write_text(text, encoding="utf-8")
 
-    print("✔ installer.iss synchronisé")
-
 
 
 def main():
 
-    print("=" * 40)
-    print(" APO Studio Version Generator")
-    print("=" * 40)
-    print()
 
     content = VERSION_TEMPLATE.format(
         app_name=APP_NAME,
@@ -119,8 +113,6 @@ def main():
         encoding="utf-8"
     )
     update_installer_version(ROOT)
-    print(f"Version : {VERSION}")
-    print(f"✔ {output} généré")
 
 
 if __name__ == "__main__":

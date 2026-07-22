@@ -55,9 +55,6 @@ class ConfigService:
 
         self.load()
 
-        print("CONFIG PATH :", self.config_path)
-        print(json.dumps(self.data["glm"], indent=4))
-
         if self._merge_defaults(DEFAULT_CONFIG, self.data):
             self.save()
 

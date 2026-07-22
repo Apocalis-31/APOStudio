@@ -14,6 +14,7 @@ import os
 from services.path_service import PathService
 from ui.widgets.update_banner import UpdateBanner
 from services.update_service import UpdateService
+from ui.ui_scale import UI
 
 import time
 
@@ -91,19 +92,19 @@ class HomePage(ctk.CTkFrame):
 
         self.header_frame.pack(
             fill="x",
-            padx=25,
+            padx=UI.PAD_WINDOW,
             pady=(15, 10)
         )
 
         self.dashboard_frame.pack(
             fill="x",
-            padx=25
+            padx=UI.PAD_WINDOW
         )
 
         self.console_frame.pack(
             fill="both",
             expand=True,
-            padx=25,
+            padx=UI.PAD_WINDOW,
             pady=(15, 20)
         )
 
@@ -167,17 +168,17 @@ class HomePage(ctk.CTkFrame):
         self.title_label = ctk.CTkLabel(
             self.header_frame,
             text="APO Studio",
-            font=("Segoe UI", 30, "bold")
+            font=("Segoe UI", UI.FONT_TITLE, "bold")
         )
 
         self.title_label.pack(
-            pady=(35, 10)
+            pady=(20, 5)
         )
 
         self.subtitle_label = ctk.CTkLabel(
             self.header_frame,
             text="Assistant de création YouTube",
-            font=("Segoe UI", 18)
+            font=("Segoe UI", UI.FONT_SUBTITLE)
         )
 
         self.subtitle_label.pack(
@@ -195,13 +196,13 @@ class HomePage(ctk.CTkFrame):
         self.actions_title = ctk.CTkLabel(
             self.actions_card,
             text="🎬 Actions",
-            font=("Segoe UI", 18, "bold")
+            font=("Segoe UI", UI.FONT_SECTION, "bold")
         )
 
         self.new_project_button = ctk.CTkButton(
             self.actions_card,
             text="🎬 Nouveau Projet",
-            height=45,
+            height=UI.BUTTON_HEIGHT,
             fg_color="#8E1F45",
             hover_color="#6E1736",
             command=self.new_project
@@ -212,7 +213,7 @@ class HomePage(ctk.CTkFrame):
             text="📚 Traitement par lot",
             fg_color="#8E1F45",
             hover_color="#6E1736",
-            height=45,
+            height=UI.BUTTON_HEIGHT,
             command=self.batch_project
         )
 
@@ -249,13 +250,13 @@ class HomePage(ctk.CTkFrame):
         self.status_title = ctk.CTkLabel(
             self.status_card,
             text="🎬 Traitement",
-            font=("Segoe UI", 18, "bold")
+            font=("Segoe UI", UI.FONT_SECTION, "bold")
         )
 
         self.current_video = ctk.CTkLabel(
             self.status_card,
             text="En attente...",
-            font=("Segoe UI", 15)
+            font=("Segoe UI", UI.FONT_TEXT)
         )
 
         self.processing_status = ProcessingStatus(
@@ -283,7 +284,7 @@ class HomePage(ctk.CTkFrame):
             self.status_card,
             text="Aucune vidéo",
             justify="left",
-            font=("Segoe UI", 13)
+            font=("Segoe UI", UI.FONT_SMALL)
         )
 
     # ==================================================
@@ -295,13 +296,13 @@ class HomePage(ctk.CTkFrame):
 
             text="🖥 Console",
 
-            font=("Segoe UI", 18, "bold")
+            font=("Segoe UI", UI.FONT_SECTION, "bold")
 
         )
 
         self.console_title.pack(
             anchor="w",
-            padx=20,
+            padx=UI.PAD,
             pady=(20, 10)
         )
 
@@ -315,7 +316,7 @@ class HomePage(ctk.CTkFrame):
         self.log_box.pack(
             fill="both",
             expand=True,
-            padx=20,
+            padx=UI.PAD,
             pady=(0, 20)
         )
 
@@ -343,31 +344,31 @@ class HomePage(ctk.CTkFrame):
 
         self.actions_title.pack(
             anchor="w",
-            padx=20,
+            padx=UI.PAD,
             pady=(20, 15)
         )
 
         self.new_project_button.pack(
             fill="x",
-            padx=20,
+            padx=UI.PAD,
             pady=(0, 10)
         )
 
         self.batch_button.pack(
             fill="x",
-            padx=20,
+            padx=UI.PAD,
             pady=(0, 20)
         )
 
         self.separator.pack(
             fill="x",
-            padx=20,
+            padx=UI.PAD,
             pady=(0, 20)
         )
 
         self.ai_status.pack(
             fill="x",
-            padx=20,
+            padx=UI.PAD,
             pady=(0, 20)
         )
 
@@ -377,48 +378,48 @@ class HomePage(ctk.CTkFrame):
 
         self.status_title.pack(
             anchor="w",
-            padx=20,
+            padx=UI.PAD,
             pady=(20, 15)
         )
 
         self.current_video.pack(
             anchor="w",
-            padx=20,
+            padx=UI.PAD,
             pady=(0, 25)
         )
 
         self.processing_status.pack(
             fill="x",
-            padx=20,
+            padx=UI.PAD,
             pady=(0, 25)
         )
 
         self.separator2.pack(
             fill="x",
-            padx=20,
+            padx=UI.PAD,
             pady=(0, 20)
         )
 
         self.queue_title.pack(
             anchor="w",
-            padx=20,
+            padx=UI.PAD,
             pady=(0, 10)
         )
 
         self.queue_progress.pack(
             anchor="w",
-            padx=20
+            padx=UI.PAD
         )
 
         self.queue_label.pack(
             anchor="w",
-            padx=20,
+            padx=UI.PAD,
             pady=(5, 20)
         )
 
         self.separator_session.pack(
             fill="x",
-            pady=20
+            pady=UI.PAD
         )
 
         self.session_status.pack(
@@ -644,7 +645,7 @@ class HomePage(ctk.CTkFrame):
 
         self.banner_frame.pack(
             fill="x",
-            padx=25,
+            padx=UI.PAD_WINDOW,
             pady=(0, 10),
             after=self.header_frame
         )

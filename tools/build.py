@@ -16,24 +16,18 @@ INSTALLER_SCRIPT = (
 )
 
 def run_step(title: str, command: list[str]) -> None:
-    print(f"\n▶ {title}")
 
     start = time.perf_counter()
 
     result = subprocess.run(command, cwd=ROOT)
 
     if result.returncode != 0:
-        print(f"❌ {title} failed")
         sys.exit(result.returncode)
 
     elapsed = time.perf_counter() - start
-    print(f"✅ {title} ({elapsed:.2f}s)")
 
 
 def main():
-    print("=" * 40)
-    print("        APO Studio Build")
-    print("=" * 40)
 
     run_step(
         "Generate version information",
@@ -62,9 +56,6 @@ def main():
         ],
     )
 
-    print("\n" + "=" * 40)
-    print("✅ Build completed successfully!")
-    print("=" * 40)
 
 
 if __name__ == "__main__":

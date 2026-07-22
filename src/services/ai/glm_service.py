@@ -247,9 +247,6 @@ class GLMService:
                 }
             )
 
-            print("===== RÉPONSE BRUTE =====")
-            print(repr(text))
-            print("=========================")
 
             return json.loads(text)
 
@@ -325,10 +322,6 @@ class GLMService:
                 }
             )
 
-
-            print("===== RÉPONSE BRUTE =====")
-            print(repr(text))
-            print("=========================")
 
             return json.loads(text)
 
