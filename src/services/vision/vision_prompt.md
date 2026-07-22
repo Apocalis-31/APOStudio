@@ -6,6 +6,8 @@ Tu reçois plusieurs captures d'écran extraites d'une vidéo.
 
 Ton objectif est de sélectionner les images ayant le plus fort potentiel pour une miniature YouTube.
 
+Évalue chaque image indépendamment avant d'établir le classement final.
+
 Tu privilégies :
 
 - les personnages clairement visibles ;

@@ -86,12 +86,18 @@ class FrameVision:
                 )
 
             success, buffer = cv2.imencode(
-                ".png",
-                image
+                ".jpg",
+                image,
+                [cv2.IMWRITE_JPEG_QUALITY, 90]
             )
 
+            raw_size = len(buffer)
+            base64_size = len(base64.b64encode(buffer))
+
             self.ui.log(
-                f"{Path(frame).name} -> {len(buffer.tobytes()) / 1024:.1f} Ko"
+                f"{Path(frame).name} : "
+                f"{raw_size/1024:.1f} Ko "
+                f"({base64_size/1024:.1f} Ko en Base64)"
             )
 
             if not success:

@@ -19,8 +19,8 @@ DEFAULT_CONFIG = {
 
     "glm": {
         "api_key": "",
-        "model": "glm-4.5",
-        "vision_model": "glm-4.5v",
+        "model": "glm-4.7-flash",
+        "vision_model": "glm-4.6v-flash",
         "base_url": "https://open.bigmodel.cn/api/paas/v4/"
     },
 
@@ -54,6 +54,9 @@ class ConfigService:
             self.create_default_config()
 
         self.load()
+
+        print("CONFIG PATH :", self.config_path)
+        print(json.dumps(self.data["glm"], indent=4))
 
         if self._merge_defaults(DEFAULT_CONFIG, self.data):
             self.save()
