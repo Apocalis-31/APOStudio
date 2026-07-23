@@ -1,6 +1,7 @@
 import threading
 import traceback
 from core.ProjectManager import ProjectManager
+from services.ai.glm_service import _translate_error
 
 
 class TranscriptionWorker:
@@ -47,7 +48,7 @@ class TranscriptionWorker:
 
             self.ui.log("❌ Une erreur est survenue")
 
-            self.ui.log(str(e))
+            self.ui.log(_translate_error(str(e)))
 
             self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 

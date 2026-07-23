@@ -10,6 +10,23 @@ from openai import (
 
 from services.config_service import ConfigService
 
+ERROR_TRANSLATIONS = {
+    "余额不足或无可用资源包,请充值。": "Solde insuffisant ou aucun forfait disponible. Veuillez recharger votre compte.",
+    "余额不足": "Solde insuffisant.",
+    "无可用资源包": "Aucun forfait disponible.",
+    "请充值": "Veuillez recharger votre compte.",
+    "该模型当前访问量过大，请您稍后再试": "Le modèle est actuellement surchargé. Veuillez réessayer plus tard.",
+    "该模型当前访问量过大": "Le modèle est actuellement surchargé.",
+    "请您稍后再试": "Veuillez réessayer plus tard.",
+}
+
+
+def _translate_error(error_str: str) -> str:
+    translated = error_str
+    for zh, fr in ERROR_TRANSLATIONS.items():
+        translated = translated.replace(zh, fr)
+    return translated
+
 class GLMService:
 
         MAX_RETRY = 5
@@ -93,7 +110,7 @@ class GLMService:
                 f"❌ {type(error).__name__} après {elapsed:.2f}s"
             )
 
-            self.debug(str(error))
+            self.debug(_translate_error(str(error)))
 
 
         def _execute_request(
@@ -168,7 +185,7 @@ class GLMService:
                         continue
 
                     raise Exception(
-                        "GLM indisponible après plusieurs tentatives."
+                        _translate_error("GLM indisponible après plusieurs tentatives.")
                     )
 
                 except APITimeoutError as e:

@@ -1,23 +1,39 @@
 import json
 import os
+import sys
 from pathlib import Path
 from services.path_service import PathService
 
-venv = PathService.ffmpeg() / ".venv"
+if getattr(sys, "frozen", False):
+    _base = Path(sys.executable).parent / "_internal"
+    cuda_dll_dirs = [
+        _base / "nvidia/cublas/bin",
+        _base / "nvidia/cudnn/bin",
+        _base / "nvidia/cuda_runtime/bin",
+        _base / "nvidia/cuda_nvrtc/bin",
+    ]
+else:
+    _base = Path(__file__).resolve().parents[3] / ".venv" / "Lib/site-packages"
+    cuda_dll_dirs = [
+        _base / "nvidia/cuda_runtime/bin",
+        _base / "nvidia/cuda_nvrtc/bin",
+        _base / "nvidia/cublas/bin",
+        _base / "nvidia/cudnn/bin",
+    ]
 
-cuda_runtime = (
-    venv / "Lib/site-packages/nvidia/cuda_runtime/bin"
-)
+for d in cuda_dll_dirs:
+    if d.exists():
+        os.add_dll_directory(str(d))
+        os.environ["PATH"] = str(d) + os.pathsep + os.environ.get("PATH", "")
 
-cuda_nvrtc = (
-    venv / "Lib/site-packages/nvidia/cuda_nvrtc/bin"
-)
 
-if cuda_runtime.exists():
-    os.add_dll_directory(str(cuda_runtime))
-
-if cuda_nvrtc.exists():
-    os.add_dll_directory(str(cuda_nvrtc))
+def _cuda_available() -> bool:
+    for d in cuda_dll_dirs:
+        if d.name == "bin" and d.exists():
+            for dll in d.iterdir():
+                if dll.name == "cublas64_12.dll":
+                    return True
+    return False
 
 
 from faster_whisper import WhisperModel
@@ -32,43 +48,55 @@ class WhisperService:
 
         self.ui = ui
 
-        self.ui.log("🎙️ Chargement du modèle Whisper...")
+        self.ui.log("Chargement du modele Whisper...")
 
-        self.ui.log("🔍 Détection du mode Whisper...")
+        self.ui.log("Detection du mode Whisper...")
 
-        try:
+        if _cuda_available():
 
-            self.model = WhisperModel(
-                "small",
-                device="cuda",
-                compute_type="float16"
-            )
+            self.ui.log("DLL CUDA detectees, tentative GPU...")
 
-            self.ui.log("🚀 Whisper GPU (CUDA)")
+            try:
 
-        except Exception as e:
+                self.model = WhisperModel(
+                    "small",
+                    device="cuda",
+                    compute_type="float16"
+                )
 
-            self.ui.log(f"⚠️ CUDA indisponible : {e}")
+                self.ui.log("Whisper GPU (CUDA)")
 
-            message = str(e).lower()
+            except Exception as e:
 
-            if "model.bin" in message or "unable to open file" in message:
+                self.ui.log(f"Erreur chargement GPU : {e}")
 
-                cache = Path.home() / ".cache" / "huggingface"
+                message = str(e).lower()
 
-                raise RuntimeError(
-                    "Le modèle Whisper est incomplet ou corrompu.\n\n"
-                    f"Supprimez le dossier :\n{cache}\n\n"
-                    "Le modèle sera téléchargé automatiquement au prochain lancement."
-                ) from e
+                if "model.bin" in message or "unable to open file" in message:
 
-            self.ui.log("💻 CUDA indisponible, utilisation du CPU...")
+                    cache = Path.home() / ".cache" / "huggingface"
 
-            self.model = WhisperModel(
-                "small",
-                device="cpu",
-                compute_type="int8"
-            )
+                    raise RuntimeError(
+                        "Le modele Whisper est incomplet ou corrompu.\n\n"
+                        f"Supprimez le dossier :\n{cache}\n\n"
+                        "Le modele sera telecharge automatiquement au prochain lancement."
+                    ) from e
+
+                self.ui.log("Bascule sur CPU...")
+                self._load_cpu()
+
+        else:
+
+            self.ui.log("DLL CUDA manquantes, utilisation du CPU...")
+            self._load_cpu()
+
+    def _load_cpu(self):
+        self.model = WhisperModel(
+            "small",
+            device="cpu",
+            compute_type="int8"
+        )
+        self.ui.log("Whisper CPU (int8)")
 
     def transcribe(self, project: Project):
 
@@ -80,11 +108,11 @@ class WhisperService:
 
         duration = video_info.get_duration(project.video_path)
 
-        self.ui.log(f"🎬 Durée : {duration:.1f} secondes")
+        self.ui.log(f"Duree : {duration:.1f} secondes")
 
-        self.ui.log("🎙️ Début de la transcription...")
+        self.ui.log("Debut de la transcription...")
 
-        self.ui.log("📝 Transcription en cours...")
+        self.ui.log("Transcription en cours...")
 
         segments, info = self.model.transcribe(
             str(project.video_path),
@@ -121,21 +149,20 @@ class WhisperService:
                 ensure_ascii=False
             )
 
-        self.ui.log(f"🌍 Langue détectée : {info.language}")
+        self.ui.log(f"Langue detectee : {info.language}")
 
-        self.ui.log(f"🎯 Confiance : {info.language_probability:.2f}")
+        self.ui.log(f"Confiance : {info.language_probability:.2f}")
 
-        self.ui.log("💾 Sauvegarde du transcript...")
+        self.ui.log("Sauvegarde du transcript...")
 
         project.transcription_done = True
         
-        self.ui.log(f"📄 Segments générés : {len(segments)}")
+        self.ui.log(f"Segments generes : {len(segments)}")
 
-        self.ui.log("✅ Transcription terminée !")
+        self.ui.log("Transcription terminee !")
 
-        self.ui.log("💾 Transcript sauvegardé !")
+        self.ui.log("Transcript sauvegarde !")
 
         elapsed = time.perf_counter() - start
 
-        self.ui.log(f"⏱ Temps : {elapsed:.1f} secondes")
-
+        self.ui.log(f"Temps : {elapsed:.1f} secondes")
