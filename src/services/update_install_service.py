@@ -14,6 +14,9 @@ class UpdateInstallService:
             "APOStudio_Setup.exe"
         )
 
+        if os.path.exists(installer_path):
+            os.remove(installer_path)
+
         response = requests.get(
             update_info.download_url,
             stream=True
