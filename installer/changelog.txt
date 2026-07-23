@@ -1,37 +1,35 @@
-APO Studio 1.0.0
-=================
+🚀 APO Studio v1.0.6
 
-Merci d'utiliser APO Studio !
+Mise à jour avec mécanisme d'arrêt réel et améliorations de l'interface utilisateur.
 
-Nouveautés de la version 1.0.0
-------------------------------
+✨ Nouveautés
+- Bouton Stop avec annulation réelle du pipeline de traitement
+- Bouton Relancer pour relancer les vidéos en attente
+- Boutons Nouveau Projet et Traitement par lot côte à côte
+- Centrage du dashboard et meilleure utilisation de l'espace
 
-✓ Création automatique de projets
+🤖 Annulation intelligente
+- Un mécanisme threading.Event propage l'annulation à travers tout le pipeline
+- Vérification de l'arrêt à chaque étape : transcription, YouTube, thumbnail, sauvegarde
+- Arrêt propre sans corrompre les fichiers en cours de création
+- Exception Cancelled gérée séparément des erreurs classiques
 
-✓ Transcription locale avec Whisper (GPU / CPU)
+🎨 Interface utilisateur
+- Nouveau layout avec boutons d'action alignés horizontalement
+- Bouton Stop désactivé par défaut, activé uniquement lors d'un traitement
+- Couleurs unifiées pour tous les boutons d'action
+- Suppression de l'espace vertical inutile entre les widgets
 
-✓ Génération automatique des informations YouTube
+🔧 Corrections
+- Fix du bouton Stop qui n'annulait pas réellement le traitement
+- Fix du centrage du dashboard qui n'utilisait pas tout l'espace disponible
+- Fix de la détection de mise à jour : gestion des tags GitHub en majuscule (V1.0.5)
+- Fix du bouton Relancer apparaissant sans erreur
 
-✓ Génération d'introduction
-
-✓ Génération de propositions de miniatures
-
-✓ Sélection intelligente des captures par IA
-
-✓ SmartCut IA pour le découpage automatique
-
-✓ Découpage vidéo avec FFmpeg
-
-✓ Traitement en lot
-
-✓ Workflow personnalisable
-
-✓ Support de plusieurs fournisseurs d'IA :
-  - OpenAI
-  - GLM
-  - Ollama
-
-✓ Installateur Windows
+⚙️ CI/CD
+- Ajout du workflow GitHub Actions pour la compilation automatique
+- Build de l'installateur via Inno Setup à chaque tag de version
+- Création automatique de la release avec l'installeur
 
 ------------------------------------------------
 
