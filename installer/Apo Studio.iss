@@ -1,5 +1,5 @@
 #define MyAppName "APO Studio"
-#define MyAppVersion "1.0.5.0"
+#define MyAppVersion "1.1.2.0"
 #define MyAppPublisher "APO Studio"
 #define MyAppExeName "APO Studio.exe"
 

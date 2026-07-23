@@ -140,6 +140,8 @@ jobs:
       - name: Get previous version
         id: prev
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           PREV=$(gh api repos/${{ github.repository }}/releases --jq '.[0].tag_name' 2>/dev/null | sed 's/^v//')
           if [ -z "$PREV" ] || [ "$PREV" = "${{ needs.version.outputs.version }}" ]; then
@@ -151,6 +153,8 @@ jobs:
       - name: Download previous manifest
         if: steps.prev.outputs.previous != ''
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           PREV="${{ steps.prev.outputs.previous }}"
           gh release download "v$PREV" --repo ${{ github.repository }} --pattern "manifest_v*.json" --dir manifests 2>/dev/null || true
@@ -227,6 +231,8 @@ jobs:
 
       - name: Delete old release assets
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ github.ref_name }}"
           EXISTING=$(gh release view "$TAG" --repo "${{ github.repository }}" --json assets --jq '.assets[].name' 2>/dev/null || true)

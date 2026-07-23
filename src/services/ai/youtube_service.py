@@ -1,5 +1,3 @@
-from unittest import result
-
 from models.project import Project
 import json
 from services.ai.prompt_builder import PromptBuilder
