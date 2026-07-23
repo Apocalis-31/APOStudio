@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PYINSTALLER_SPEC = "APO Studio.spec"
 
 INNO_SETUP = (
-    r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+    r"D:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 )
 
 INSTALLER_SCRIPT = (

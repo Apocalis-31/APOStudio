@@ -10,3 +10,4 @@ class UpdateInfo:
     release_name: str = ""
     download_url: str = ""
     release_notes: str = ""
+    is_gpu: bool = False
