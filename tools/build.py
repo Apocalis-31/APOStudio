@@ -7,9 +7,9 @@ ROOT = Path(__file__).resolve().parent.parent
 
 PYINSTALLER_SPEC = "APO Studio.spec"
 
-INNO_SETUP = (
-    r"D:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-)
+INNO_SETUP_C = Path(r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe")
+INNO_SETUP_D = Path(r"D:\Program Files (x86)\Inno Setup 6\ISCC.exe")
+INNO_SETUP = INNO_SETUP_C if INNO_SETUP_C.exists() else INNO_SETUP_D
 
 INSTALLER_SCRIPT = (
     ROOT / "installer" / "Apo Studio.iss"
