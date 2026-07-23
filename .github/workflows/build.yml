@@ -172,6 +172,12 @@ jobs:
             exit 0
           fi
 
+          if [ ! -f "manifests/manifest_v${PREV}.json" ]; then
+            echo "No manifest for v$PREV, skipping patch"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           python -c "
           from tools.patch_builder import diff
           from tools.patch_packager import create_patch_zip
