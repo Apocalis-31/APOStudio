@@ -89,3 +89,12 @@ class UiBridge:
                 duration
             )
         )
+
+    def queue_update_buttons(self, has_pending):
+
+        self.queue.put(
+            (
+                "queue_update_buttons",
+                has_pending
+            )
+        )

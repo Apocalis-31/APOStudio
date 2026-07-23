@@ -34,7 +34,7 @@ class UpdateService:
             )
         data = response.json()
 
-        latest_version = data["tag_name"].lstrip("v")
+        latest_version = data["tag_name"].lstrip("vV")
         release_name = data["name"]
         release_notes = data["body"]
 

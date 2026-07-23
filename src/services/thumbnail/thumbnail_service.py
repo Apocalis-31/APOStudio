@@ -11,9 +11,10 @@ from services.workflow.workflow_manager import WorkflowManager
 
 class ThumbnailService:
 
-    def __init__(self, ui):
+    def __init__(self, ui, cancel_event=None):
 
         self.ui = ui
+        self.cancel_event = cancel_event
 
     def generate(self, project: Project):
 
@@ -55,7 +56,7 @@ class ThumbnailService:
 
             try:
 
-                frames = FrameVision(self.ui).rank(
+                frames = FrameVision(self.ui, cancel_event=self.cancel_event).rank(
                     project,
                     frames
                 )

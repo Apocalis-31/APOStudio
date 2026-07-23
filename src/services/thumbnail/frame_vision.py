@@ -13,9 +13,10 @@ VISION_MAX_SIZE = 512
 
 class FrameVision:
 
-    def __init__(self, ui):
+    def __init__(self, ui, cancel_event=None):
 
         self.ui = ui
+        self.cancel_event = cancel_event
 
 
 
@@ -32,7 +33,7 @@ class FrameVision:
         prompt = self._build_prompt()
         
         response, finalists = FrameTournament(
-            self.ui
+            self.ui, cancel_event=self.cancel_event
         ).run(
             prompt,
             images

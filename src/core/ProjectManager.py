@@ -13,20 +13,29 @@ from services.workflow.workflow_manager import WorkflowManager
 
 class ProjectManager:
 
+    def _check_cancel(self, cancel_event):
+
+        if cancel_event and cancel_event.is_set():
+            from workers.transcription_worker import Cancelled
+            raise Cancelled()
+
     def create_project(
         self,
         video_path: str,
         ui,
+        cancel_event=None,
         forced_modules=None
     ) -> Project:
 
         video = Path(video_path)
 
+        self._check_cancel(cancel_event)
+
         ui.log("")
-        ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         ui.log("🎬 Traitement de la vidéo")
         ui.log(f"📄 {video.name}")
-        ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         ui.log("")
 
         name = video.stem
@@ -59,6 +68,8 @@ class ProjectManager:
         # Transcription
         # ==========================================
 
+        self._check_cancel(cancel_event)
+
         if workflow.enabled("transcription"):
 
             ui.log("🎙️ Chargement de Whisper...")
@@ -73,34 +84,40 @@ class ProjectManager:
 
             else:
 
-                whisper = WhisperService(ui=ui)
+                whisper = WhisperService(ui=ui, cancel_event=cancel_event)
                 whisper.transcribe(project)
 
         # ==========================================
         # YouTube
         # ==========================================
 
+        self._check_cancel(cancel_event)
+
         if workflow.enabled("youtube"):
 
             ui.step("youtube")
 
-            youtube = YoutubeService(ui)
+            youtube = YoutubeService(ui, cancel_event=cancel_event)
             youtube.generate(project)
 
         # ==========================================
         # Thumbnail
         # ==========================================
 
+        self._check_cancel(cancel_event)
+
         if workflow.enabled("thumbnail"):
 
             ui.step("thumbnail")
 
-            thumbnail = ThumbnailService(ui)
+            thumbnail = ThumbnailService(ui, cancel_event=cancel_event)
             thumbnail.generate(project)
 
         # ==========================================
         # Sauvegarde
         # ==========================================
+
+        self._check_cancel(cancel_event)
 
         ui.log("💾 Sauvegarde du projet...")
         ui.step("save")
@@ -108,9 +125,9 @@ class ProjectManager:
         storage.save(project)
 
         ui.log("")
-        ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         ui.log("✅ Projet terminé !")
-        ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         ui.log("")
 
         return project

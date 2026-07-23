@@ -7,7 +7,7 @@ from services.ai.glm_service import GLMService
 class AIFactory:
 
     @staticmethod
-    def create(ui=None):
+    def create(ui=None, cancel_event=None):
 
         config = ConfigService()
 
@@ -23,7 +23,7 @@ class AIFactory:
             return OllamaService(ui)
         
         elif provider == "glm":
-            return GLMService(ui)
+            return GLMService(ui, cancel_event=cancel_event)
 
         raise ValueError(
             f"Provider inconnu : {provider}"

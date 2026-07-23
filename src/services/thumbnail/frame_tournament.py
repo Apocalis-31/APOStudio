@@ -6,9 +6,10 @@ class FrameTournament:
     GROUP_SIZE = 5
     MAX_GROUPS = 6
 
-    def __init__(self, ui):
+    def __init__(self, ui, cancel_event=None):
 
         self.ui = ui
+        self.cancel_event = cancel_event
 
     def split(self, images):
 
@@ -37,7 +38,7 @@ class FrameTournament:
 
         winners = []
 
-        glm = GLMService(self.ui)
+        glm = GLMService(self.ui, cancel_event=self.cancel_event)
 
         for index, group in enumerate(groups, start=1):
 
