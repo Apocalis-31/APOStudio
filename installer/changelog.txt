@@ -1,16 +1,17 @@
-🚀 APO Studio v1.1.1
+🚀 APO Studio v1.1.2
 
-Mise à jour de taille optimisée
+Système de mise à jour par patch
 
-🔧 Mise à jour optimisée
-- Tous les utilisateurs (GPU et CPU) téléchargent maintenant la version CPU (~200 Mo) pour les mises à jour
-- Les DLLs CUDA sont conservées lors de la mise à jour pour les utilisateurs GPU
-- Évite le téléchargement de 850 Mo à chaque mise à jour
+✨ Nouveautés
+- Système de mise à jour par patch léger : seuls les fichiers modifiés sont téléchargés
+- Updater intégré : applique les patchs sans réinstallateur complet
+- Manifest SHA256 pour détecter les changements entre versions
+- Les utilisateurs GPU et CPU reçoivent le même patch
 
 ⚙️ Corrections
-- Correction de la logique de téléchargement de la mise à jour
-- Correction du parsing des options Inno Setup dans le workflow
-- Mise à jour des actions GitHub vers les dernières versions (Node 24)
+- Suppression des anciens fichiers de release avant upload
+- Détection automatique du chemin Inno Setup
+- Nettoyage de l'ancien installeur avant téléchargement
 
 ------------------------------------------------
 
