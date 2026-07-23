@@ -32,15 +32,26 @@ jobs:
           .\.venv\Scripts\activate
           python tools/generate_version_info.py
 
-      - name: Build executable
+      - name: Build executable (GPU)
         run: |
           .\.venv\Scripts\activate
           python -m PyInstaller --clean "APO Studio.spec"
 
-      - name: Compile Inno Setup
+      - name: Compile Inno Setup (GPU)
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
           path: installer/Apo Studio.iss
+          options: /O+
+
+      - name: Build executable (CPU)
+        run: |
+          .\.venv\Scripts\activate
+          python -m PyInstaller --clean "APO Studio CPU.spec"
+
+      - name: Compile Inno Setup (CPU)
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: installer/Apo Studio CPU.iss
           options: /O+
 
       - name: Get version
@@ -52,11 +63,12 @@ jobs:
           version = re.search(r'VERSION\s*=\s*"(.+?)"', content).group(1)
           print(f"version={version}")
 
-      - name: Upload installer
+      - name: Upload installers
         uses: actions/upload-artifact@v4
         with:
           name: APOStudio_Setup_${{ steps.version.outputs.version }}
-          path: installer/output/APOStudio_Setup_*.exe
+          path: |
+            installer/output/APOStudio_Setup_*.exe
 
       - name: Create release
         if: startsWith(github.ref, 'refs/tags/')
@@ -65,6 +77,7 @@ jobs:
           name: "APO Studio v${{ steps.version.outputs.version }}"
           tag_name: ${{ github.ref_name }}
           body_path: installer/changelog.txt
-          files: installer/output/APOStudio_Setup_*.exe
+          files: |
+            installer/output/APOStudio_Setup_*.exe
           draft: false
           prerelease: false
