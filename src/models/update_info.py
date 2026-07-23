@@ -11,3 +11,4 @@ class UpdateInfo:
     download_url: str = ""
     release_notes: str = ""
     is_gpu: bool = False
+    is_patch: bool = False

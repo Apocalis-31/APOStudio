@@ -1,5 +1,5 @@
+import sys
 import customtkinter as ctk
-from services.update_install_service import UpdateInstallService
 from workers.update_download_worker import UpdateDownloadWorker
 
 
@@ -67,9 +67,15 @@ class UpdateBanner(ctk.CTkFrame):
                     text=f"{mb_done:.1f} / {mb_total:.1f} Mo"
                 ))
 
+            def on_finished():
+                if self.info.is_patch:
+                    root.after(0, root.destroy)
+                else:
+                    root.after(0, root.destroy)
+
             UpdateDownloadWorker(
                 self.info,
-                lambda: root.after(0, root.destroy),
+                on_finished=on_finished,
                 on_progress=on_progress
             ).start()
 
@@ -82,7 +88,7 @@ class UpdateBanner(ctk.CTkFrame):
 
         self.info = info
 
-        variant = "léger"
+        variant = "patch" if info.is_patch else ("léger" if info.is_gpu else "lourd")
 
         self.info_label.configure(
             text=(

@@ -1,5 +1,5 @@
+import sys
 from threading import Thread
-import subprocess
 
 from services.update_install_service import UpdateInstallService
 
@@ -17,12 +17,22 @@ class UpdateDownloadWorker(Thread):
 
         try:
 
-            installer_path = UpdateInstallService.install(
-                self.update_info,
-                on_progress=self.on_progress
-            )
+            if self.update_info.is_patch:
 
-            subprocess.Popen([installer_path])
+                UpdateInstallService.install_patch(
+                    self.update_info,
+                    on_progress=self.on_progress
+                )
+
+            else:
+
+                installer_path = UpdateInstallService.install(
+                    self.update_info,
+                    on_progress=self.on_progress
+                )
+
+                import subprocess
+                subprocess.Popen([installer_path])
 
             if self.on_finished:
                 self.on_finished()

@@ -62,6 +62,46 @@ jobs:
           .\.venv\Scripts\activate
           python -m PyInstaller --clean "${{ matrix.spec }}"
 
+      - name: Build updater
+        run: |
+          .\.venv\Scripts\activate
+          python -m PyInstaller --clean "APO Studio Updater.spec"
+
+      - name: Copy updater into dist
+        shell: bash
+        run: |
+          VARIANT="${{ matrix.variant }}"
+          if [ "$VARIANT" = "CPU" ]; then
+            DIST_DIR="dist/Apo Studio CPU"
+          else
+            DIST_DIR="dist/Apo Studio"
+          fi
+          cp "dist/APOStudio_Updater/APOStudio_Updater.exe" "$DIST_DIR/"
+
+      - name: Generate manifest (${{ matrix.variant }})
+        if: matrix.variant == 'CPU'
+        shell: bash
+        run: |
+          python -c "
+          from tools.patch_builder import generate
+          from pathlib import Path
+          p = generate(Path('dist/Apo Studio CPU'), '${{ needs.version.outputs.version }}')
+          print(f'Manifest: {p}')
+          "
+
+      - name: Upload manifest
+        if: matrix.variant == 'CPU'
+        uses: actions/upload-artifact@v7
+        with:
+          name: manifest
+          path: manifests/manifest_v*.json
+
+      - name: Upload dist (${{ matrix.variant }})
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-${{ matrix.variant }}
+          path: dist/Apo Studio${{ matrix.variant == 'CPU' && ' CPU' || '' }}
+
       - name: Compile Inno Setup (${{ matrix.variant }})
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.9
         with:
@@ -74,8 +114,92 @@ jobs:
           name: installer-${{ matrix.variant }}
           path: installer/output/APOStudio_Setup*.exe
 
-  release:
+  patch:
     needs: [version, build]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Download current manifest
+        uses: actions/download-artifact@v8
+        with:
+          name: manifest
+          path: manifests
+
+      - name: Download CPU dist
+        uses: actions/download-artifact@v8
+        with:
+          name: dist-CPU
+          path: dist/Apo Studio CPU
+
+      - name: Get previous version
+        id: prev
+        shell: bash
+        run: |
+          PREV=$(gh api repos/${{ github.repository }}/releases --jq '.[0].tag_name' 2>/dev/null | sed 's/^v//')
+          if [ -z "$PREV" ] || [ "$PREV" = "${{ needs.version.outputs.version }}" ]; then
+            echo "previous=" >> "$GITHUB_OUTPUT"
+          else
+            echo "previous=$PREV" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download previous manifest
+        if: steps.prev.outputs.previous != ''
+        shell: bash
+        run: |
+          PREV="${{ steps.prev.outputs.previous }}"
+          gh release download "v$PREV" --repo ${{ github.repository }} --pattern "manifest_v*.json" --dir manifests 2>/dev/null || true
+
+      - name: Create patch zip
+        id: patch
+        shell: bash
+        run: |
+          PREV="${{ steps.prev.outputs.previous }}"
+          CURR="${{ needs.version.outputs.version }}"
+
+          if [ -z "$PREV" ]; then
+            echo "No previous version, skipping patch"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          python -c "
+          from tools.patch_builder import diff
+          from tools.patch_packager import create_patch_zip
+          from pathlib import Path
+          import json, sys
+
+          result = diff('$PREV', '$CURR')
+          changed = result['changed']
+          print(f'Changed files: {len(changed)}')
+          for f in changed:
+              print(f'  - {f}')
+
+          if not changed:
+              print('No changes, skipping patch')
+              sys.exit(0)
+
+          create_patch_zip('$CURR', changed, Path('dist/Apo Studio CPU'))
+          "
+
+          if [ ! -f "installer/output/APOStudio_Patch_v${CURR}.zip" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload patch artifact
+        if: steps.patch.outputs.skip != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: patch
+          path: installer/output/APOStudio_Patch*.zip
+
+  release:
+    needs: [version, build, patch]
     runs-on: windows-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
@@ -87,6 +211,19 @@ jobs:
           path: installer/output
           pattern: installer-*
           merge-multiple: true
+
+      - name: Download patch artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: patch
+          path: installer/output
+        continue-on-error: true
+
+      - name: Download manifest for release
+        uses: actions/download-artifact@v8
+        with:
+          name: manifest
+          path: manifests
 
       - name: Delete old release assets
         shell: bash
@@ -106,5 +243,7 @@ jobs:
           body_path: installer/changelog.txt
           files: |
             installer/output/APOStudio_Setup_*.exe
+            installer/output/APOStudio_Patch_*.zip
+            manifests/manifest_v*.json
           draft: false
           prerelease: false

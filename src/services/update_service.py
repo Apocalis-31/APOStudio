@@ -53,16 +53,24 @@ class UpdateService:
 
         assets = data["assets"]
 
+        has_update = tuple(map(int, latest_version.split("."))) > tuple(map(int, VERSION.split(".")))
+
         download_url = None
+        is_patch = False
         for asset in assets:
-            if "CPU" in asset["name"]:
+            if "Patch" in asset["name"]:
                 download_url = asset["browser_download_url"]
+                is_patch = True
                 break
 
         if download_url is None:
-            download_url = assets[0]["browser_download_url"]
+            for asset in assets:
+                if "CPU" in asset["name"]:
+                    download_url = asset["browser_download_url"]
+                    break
 
-        has_update = tuple(map(int, latest_version.split("."))) > tuple(map(int, VERSION.split(".")))
+        if download_url is None:
+            download_url = assets[0]["browser_download_url"]
 
         return UpdateInfo(
             current_version=VERSION,
@@ -71,5 +79,6 @@ class UpdateService:
             release_name=release_name,
             download_url=download_url,
             release_notes=release_notes,
-            is_gpu=UpdateService.is_gpu_install()
+            is_gpu=UpdateService.is_gpu_install(),
+            is_patch=is_patch
         )
