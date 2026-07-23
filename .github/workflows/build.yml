@@ -105,7 +105,6 @@ jobs:
           tag_name: ${{ github.ref_name }}
           body_path: installer/changelog.txt
           files: |
-            installer/output/APOStudio_Setup_${{ needs.version.outputs.version }}.exe
-            installer/output/APOStudio_Setup_CPU_${{ needs.version.outputs.version }}.exe
+            installer/output/APOStudio_Setup_*.exe
           draft: false
           prerelease: false
