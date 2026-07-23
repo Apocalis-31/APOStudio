@@ -4,10 +4,23 @@ from PyInstaller.utils.hooks import collect_submodules
 
 hiddenimports = collect_submodules("faster_whisper")
 
+import os
+venv = os.path.join(os.path.dirname(os.path.abspath(SPEC)), '.venv')
+nvidia_base = os.path.join(venv, 'Lib', 'site-packages', 'nvidia')
+
+cuda_binaries = []
+for sub in ['cublas', 'cudnn', 'cuda_runtime', 'cuda_nvrtc']:
+    bin_dir = os.path.join(nvidia_base, sub, 'bin')
+    if os.path.isdir(bin_dir):
+        for dll in os.listdir(bin_dir):
+            if dll.lower().endswith('.dll'):
+                src = os.path.join(bin_dir, dll)
+                cuda_binaries.append((src, os.path.join('nvidia', sub, 'bin')))
+
 a = Analysis(
     ['src\\main.py'],
     pathex=[],
-    binaries=[],
+    binaries=cuda_binaries,
     datas=[
     ("assets", "assets"),
     ("docs", "docs"),
