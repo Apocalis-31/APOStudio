@@ -82,7 +82,7 @@ class UpdateBanner(ctk.CTkFrame):
 
         self.info = info
 
-        variant = "CPU (léger)"
+        variant = "léger"
 
         self.info_label.configure(
             text=(
