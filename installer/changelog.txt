@@ -1,35 +1,33 @@
-🚀 APO Studio v1.0.6
+🚀 APO Studio v1.1.0
 
-Mise à jour avec mécanisme d'arrêt réel et améliorations de l'interface utilisateur.
+Refonte complète du système IA
 
-✨ Nouveautés
-- Bouton Stop avec annulation réelle du pipeline de traitement
-- Bouton Relancer pour relancer les vidéos en attente
-- Boutons Nouveau Projet et Traitement par lot côte à côte
-- Centrage du dashboard et meilleure utilisation de l'espace
+✨ Nouveau système de prompts
+- Nouvelle architecture modulaire des prompts IA
+- Séparation entre les connaissances d'APO Studio et les préférences utilisateur
+- Fusion automatique des règles par défaut et des personnalisations utilisateur
+- Simplification complète du PromptBuilder
+- Ajout d'un bloc PROJECT afin de fournir davantage de contexte à l'IA
 
-🤖 Annulation intelligente
-- Un mécanisme threading.Event propage l'annulation à travers tout le pipeline
-- Vérification de l'arrêt à chaque étape : transcription, YouTube, thumbnail, sauvegarde
-- Arrêt propre sans corrompre les fichiers en cours de création
-- Exception Cancelled gérée séparément des erreurs classiques
+⚙️ Nouvelle fenêtre « Préférences IA »
+- Remplacement de l'ancienne fenêtre de style
+- Interface unique pour modifier toutes les catégories de prompts
+- Gestion des profils : Créateur, Introduction, Miniature, Hook
+- Consultation des règles d'APO Studio en lecture seule
+- Sauvegarde des préférences utilisateur directement depuis l'application
 
-🎨 Interface utilisateur
-- Nouveau layout avec boutons d'action alignés horizontalement
-- Bouton Stop désactivé par défaut, activé uniquement lors d'un traitement
-- Couleurs unifiées pour tous les boutons d'action
-- Suppression de l'espace vertical inutile entre les widgets
+🧹 Nettoyage
+- Suppression de l'ancienne architecture des prompts
+- Suppression des fichiers devenus obsolètes
+- Code simplifié, plus clair et plus facile à maintenir
 
-🔧 Corrections
-- Fix du bouton Stop qui n'annulait pas réellement le traitement
-- Fix du centrage du dashboard qui n'utilisait pas tout l'espace disponible
-- Fix de la détection de mise à jour : gestion des tags GitHub en majuscule (V1.0.5)
-- Fix du bouton Relancer apparaissant sans erreur
+🔧 Améliorations techniques
+- Refactorisation du moteur de génération des prompts
+- Architecture prête à accueillir de nouvelles catégories : SEO, Description, Shorts, Chapitres...
 
-⚙️ CI/CD
-- Ajout du workflow GitHub Actions pour la compilation automatique
-- Build de l'installateur via Inno Setup à chaque tag de version
-- Création automatique de la release avec l'installeur
+Mise à jour automatique
+- Détection du type d'installation (GPU/CPU) pour télécharger le bon installeur
+- Barre de progression pendant le téléchargement
 
 ------------------------------------------------
 
