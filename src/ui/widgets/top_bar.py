@@ -4,8 +4,7 @@ from ui.windows.settings_window import SettingsWindow
 from ui.windows.workflow_window import WorkflowWindow
 from ui.windows.tools_window import ToolsWindow
 from ui.windows.help_window import HelpWindow
-from ui.windows.ai_style_window import AIStyleWindow
-
+from ui.windows.ai_settings_window import AISettingsWindow
 
 class TopBar(ctk.CTkFrame):
 
@@ -106,4 +105,4 @@ class TopBar(ctk.CTkFrame):
         HelpWindow(self.home)
 
     def open_ai_style(self):
-        AIStyleWindow(self.home)
+        AISettingsWindow(self.home)

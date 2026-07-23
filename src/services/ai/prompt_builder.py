@@ -1,118 +1,162 @@
 from pathlib import Path
+
 from models.project import Project
 from models.prompt import Prompt
 from services.path_service import PathService
 
+
 class PromptBuilder:
+
+    USER_BLOCKS = [
+        "creator.md",
+        "intro.md",
+        "thumbnail.md",
+        "hook.md",
+    ]
 
     def __init__(self):
 
         self.knowledge_path = PathService.knowledge()
-
+        self.user_prompt_path = PathService.user_prompts()
         self.prompt_path = PathService.prompts()
 
-    def build(self, project: Project, provider: str):
+    # =====================================================
+    # YOUTUBE
+    # =====================================================
 
-
-
-        # ==========================
-        # SYSTEM
-        # ==========================
-
-        if provider == "ollama":
-            system_prompt = self.read_prompt("youtube_prompt_ollama.md")
-
-        elif provider == "glm":
-            system_prompt = self.read_prompt("youtube_prompt_glm.md")
-
-        else:
-            system_prompt = self.read_prompt("youtube_prompt.md")
-
-        # ==========================
-        # USER
-        # ==========================
-
-        user_sections = []
-
-        if provider == "ollama":
-
-            user_sections.append(self.read("channel.md"))
-            intro = self.read("intro_style.md")
-
-            intro += "\n\n"
-
-            intro += self.read_user_prompt(
-                "intro_user.md"
-            )
-
-            user_sections.append(intro)            
-            user_sections.append(self.read("personality.md"))
-
-        else:
-
-            user_sections.append(self.read("channel.md"))
-            user_sections.append(self.read("personality.md"))
-            intro = self.read("intro_style.md")
-
-            intro += "\n\n"
-
-            system_prompt = self.read_prompt("youtube_prompt_glm.md")
-
-            intro = self.read("intro_style.md")
-            intro += "\n\n"
-            intro += self.read_user_prompt("intro_user.md")
-
-            system_prompt += "\n\n# Préférences du créateur\n\n"
-            system_prompt += intro       
-            user_sections.append(self.read("thumbnail_style.md"))
-            user_sections.append(self.read("forbidden.md"))
-            user_sections.append(self.read("youtube_hook.md"))
-
-            examples = self.knowledge_path / "examples"
-
-            for file in sorted(examples.glob("*.md")):
-                user_sections.append(
-                    self.read(file.relative_to(self.knowledge_path))
-                )
-
-        # Transcript
-        transcript = project.project_path / "transcript.txt"
-
-        with open(transcript, "r", encoding="utf-8") as f:
-
-            user_sections.append("# Transcript\n")
-            user_sections.append(f.read())
-
-        user_prompt = "\n\n".join(user_sections)
+    def build(
+        self,
+        project: Project,
+        provider: str
+    ):
 
         return Prompt(
-            system=system_prompt,
-            user=user_prompt
+
+            system=self.build_system(provider),
+
+            user=self.build_user(project)
+
         )
-    
 
-    def read(self, filename):
+    # =====================================================
+    # SYSTEM
+    # =====================================================
 
-        path = self.knowledge_path / filename
+    def build_system(
+        self,
+        provider: str
+    ):
 
-        with open(path, "r", encoding="utf-8") as f:
+        if provider == "ollama":
 
-            return f.read()
+            return self.read_prompt(
+                "youtube_prompt_ollama.md"
+            )
 
+        elif provider == "glm":
 
+            return self.read_prompt(
+                "youtube_prompt_glm.md"
+            )
 
-    def read_prompt(self, filename):
+        return self.read_prompt(
+            "youtube_prompt.md"
+        )
 
-        path = self.prompt_path / filename
+    # =====================================================
+    # USER
+    # =====================================================
 
-        with open(path, "r", encoding="utf-8") as f:
+    def build_user(
+        self,
+        project: Project
+    ):
 
-            return f.read()
-        
+        sections = []
 
-        # ==========================
-        # SMART CUT
-        # ==========================
+        # -------------------------
+        # Connaissances + Préférences
+        # -------------------------
+
+        for block in self.USER_BLOCKS:
+
+            content = self.read_with_override(block)
+
+            if content:
+
+                sections.append(content)
+
+        # -------------------------
+        # Projet
+        # -------------------------
+
+        sections.append(
+            self.build_project(project)
+        )
+
+        # -------------------------
+        # Transcript
+        # -------------------------
+
+        sections.append(
+            self.build_transcript(project)
+        )
+
+        return "\n\n".join(sections)
+
+    # =====================================================
+    # PROJECT
+    # =====================================================
+
+    def build_project(
+        self,
+        project: Project
+    ):
+
+        lines = [
+
+            "# PROJECT",
+
+            f"Name: {project.name}",
+
+            f"Series: {project.series}",
+
+            f"Episode: {project.episode if project.episode is not None else 'N/A'}",
+
+            f"Video: {project.video_path.name}",
+
+        ]
+
+        return "\n".join(lines)
+
+    # =====================================================
+    # TRANSCRIPT
+    # =====================================================
+
+    def build_transcript(
+        self,
+        project: Project
+    ):
+
+        transcript = (
+            project.project_path
+            / "transcript.txt"
+        )
+
+        with open(
+            transcript,
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            return (
+                "# TRANSCRIPT\n\n"
+                + f.read()
+            )
+
+    # =====================================================
+    # SMART CUT
+    # =====================================================
 
     def build_smart_cut(
         self,
@@ -134,11 +178,16 @@ class PromptBuilder:
             f"Nombre de candidats : {len(candidates)}"
         )
 
-        for i, candidate in enumerate(candidates, start=1):
+        for i, candidate in enumerate(
+            candidates,
+            start=1
+        ):
 
             section = []
 
-            section.append(f"--- Candidat {i} ---")
+            section.append(
+                f"--- Candidat {i} ---"
+            )
 
             section.append(
                 f"Timestamp : {candidate.timestamp:.1f}s"
@@ -159,31 +208,82 @@ class PromptBuilder:
             user_sections.append(
                 "\n".join(section)
             )
-            
+
         return Prompt(
 
-                system=system_prompt,
+            system=system_prompt,
 
-                user="\n\n".join(user_sections)
+            user="\n\n".join(user_sections)
 
-            )
+        )
 
-    def read_user_prompt(self, filename):
+    # =====================================================
+    # HELPERS
+    # =====================================================
+
+    def read_prompt(
+        self,
+        filename
+    ):
 
         path = (
-            PathService.user_prompts()
+            self.prompt_path
             / filename
         )
 
-        if not path.exists():
-
-            path.write_text(
-                "",
-                encoding="utf-8"
-            )
-
-            return ""
-
         return path.read_text(
             encoding="utf-8"
+        )
+
+    def read_with_override(
+        self,
+        filename
+    ):
+
+        sections = []
+
+        # -------------------------
+        # Connaissances
+        # -------------------------
+
+        knowledge_file = (
+            self.knowledge_path
+            / filename
+        )
+
+        if knowledge_file.exists():
+
+            content = knowledge_file.read_text(
+                encoding="utf-8"
+            ).strip()
+
+            if content:
+
+                sections.append(
+                    content
+                )
+
+        # -------------------------
+        # Préférences utilisateur
+        # -------------------------
+
+        user_file = (
+            self.user_prompt_path
+            / filename
+        )
+
+        if user_file.exists():
+
+            content = user_file.read_text(
+                encoding="utf-8"
+            ).strip()
+
+            if content:
+
+                sections.append(
+                    content
+                )
+
+        return "\n\n".join(
+            sections
         )
