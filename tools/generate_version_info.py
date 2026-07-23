@@ -65,32 +65,29 @@ VSVersionInfo(
 
 
 def update_installer_version(root: Path):
-    iss_file = root / "installer" / "Apo Studio.iss"
-
-    if not iss_file.exists():
-      raise FileNotFoundError(
-          f"Installer file not found: {iss_file}"
-      )
-
-
-    text = iss_file.read_text(encoding="utf-8")
-
     windows_version = VERSION + ".0"
-
     replacements = {
         "MyAppName": APP_NAME,
         "MyAppVersion": windows_version,
         "MyAppPublisher": COMPANY,
     }
 
-    for key, value in replacements.items():
-        text = re.sub(
-            rf'(#define\s+{key}\s+)".*"',
-            rf'\1"{value}"',
-            text,
-        )
+    for iss_name in ["Apo Studio.iss", "Apo Studio CPU.iss"]:
+        iss_file = root / "installer" / iss_name
 
-    iss_file.write_text(text, encoding="utf-8")
+        if not iss_file.exists():
+            continue
+
+        text = iss_file.read_text(encoding="utf-8")
+
+        for key, value in replacements.items():
+            text = re.sub(
+                rf'(#define\s+{key}\s+)".*"',
+                rf'\1"{value}"',
+                text,
+            )
+
+        iss_file.write_text(text, encoding="utf-8")
 
 
 

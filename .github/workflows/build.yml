@@ -56,12 +56,10 @@ jobs:
 
       - name: Get version
         id: version
-        shell: python
+        shell: bash
         run: |
-          import re
-          content = open("src/app_info.py").read()
-          version = re.search(r'VERSION\s*=\s*"(.+?)"', content).group(1)
-          print(f"version={version}")
+          VERSION=$(python -c "import re; print(re.search(r'VERSION\s*=\s*\"(.+?)\"', open('src/app_info.py').read()).group(1))")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Upload installers
         uses: actions/upload-artifact@v4
