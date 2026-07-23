@@ -57,12 +57,12 @@ class UpdateService:
         download_url = None
         if has_gpu:
             for asset in assets:
-                if "CPU" not in asset["name"]:
+                if "CPU" in asset["name"]:
                     download_url = asset["browser_download_url"]
                     break
         else:
             for asset in assets:
-                if "CPU" in asset["name"]:
+                if "CPU" not in asset["name"]:
                     download_url = asset["browser_download_url"]
                     break
 
