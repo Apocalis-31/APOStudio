@@ -15,7 +15,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get version
         id: version
@@ -34,17 +34,15 @@ jobs:
           - variant: GPU
             spec: "APO Studio.spec"
             iss: "installer/Apo Studio.iss"
-            output_pattern: "APOStudio_Setup_*[!C]*.exe"
           - variant: CPU
             spec: "APO Studio CPU.spec"
             iss: "installer/Apo Studio CPU.iss"
-            output_pattern: "APOStudio_Setup_CPU_*.exe"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
 
@@ -65,13 +63,13 @@ jobs:
           python -m PyInstaller --clean "${{ matrix.spec }}"
 
       - name: Compile Inno Setup (${{ matrix.variant }})
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.9
         with:
           path: ${{ matrix.iss }}
           options: /O+ /Q
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installer-${{ matrix.variant }}
           path: installer/output/APOStudio_Setup*.exe
@@ -81,10 +79,10 @@ jobs:
     runs-on: windows-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: installer/output
           pattern: installer-*
@@ -101,7 +99,7 @@ jobs:
           done
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: "APO Studio v${{ needs.version.outputs.version }}"
           tag_name: ${{ github.ref_name }}
