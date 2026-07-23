@@ -1,5 +1,7 @@
 from services.ai.ollama_service import OllamaService
 from services.ai.openai_service import OpenAIService
+from services.ai.nvidia_service import NvidiaService
+from services.ai.gemini_service import GeminiService
 from services.config_service import ConfigService
 from services.ai.glm_service import GLMService
 
@@ -24,6 +26,12 @@ class AIFactory:
         
         elif provider == "glm":
             return GLMService(ui, cancel_event=cancel_event)
+
+        elif provider == "nvidia":
+            return NvidiaService(ui)
+
+        elif provider == "gemini":
+            return GeminiService(ui)
 
         raise ValueError(
             f"Provider inconnu : {provider}"

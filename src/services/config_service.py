@@ -24,6 +24,16 @@ DEFAULT_CONFIG = {
         "base_url": "https://open.bigmodel.cn/api/paas/v4/"
     },
 
+    "nvidia": {
+        "api_key": "",
+        "model": "deepseek-ai/deepseek-v4-flash"
+    },
+
+    "gemini": {
+        "api_key": "",
+        "model": "gemini-2.5-flash"
+    },
+
     "ollama": {
         "url": "http://localhost:11434",
         "model": "llama3.2"

@@ -55,6 +55,8 @@ class AIStatus(ctk.CTkFrame):
             "openai": "🟢",
             "claude": "🟣",
             "glm": "🔵",
+            "nvidia": "💚",
+            "gemini": "🔷",
             "ollama": "🟠"
         }
 
