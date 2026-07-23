@@ -27,4 +27,5 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
+    icon='assets/branding/logo_transparence_AS.ico',
 )
