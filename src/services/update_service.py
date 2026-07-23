@@ -52,19 +52,12 @@ class UpdateService:
             raise RuntimeError("La Release ne contient aucun installateur.")
 
         assets = data["assets"]
-        has_gpu = UpdateService.is_gpu_install()
 
         download_url = None
-        if has_gpu:
-            for asset in assets:
-                if "CPU" not in asset["name"]:
-                    download_url = asset["browser_download_url"]
-                    break
-        else:
-            for asset in assets:
-                if "CPU" in asset["name"]:
-                    download_url = asset["browser_download_url"]
-                    break
+        for asset in assets:
+            if "CPU" in asset["name"]:
+                download_url = asset["browser_download_url"]
+                break
 
         if download_url is None:
             download_url = assets[0]["browser_download_url"]

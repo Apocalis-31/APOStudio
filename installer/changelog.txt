@@ -1,33 +1,16 @@
-🚀 APO Studio v1.1.0
+🚀 APO Studio v1.1.1
 
-Refonte complète du système IA
+Mise à jour de taille optimisée
 
-✨ Nouveau système de prompts
-- Nouvelle architecture modulaire des prompts IA
-- Séparation entre les connaissances d'APO Studio et les préférences utilisateur
-- Fusion automatique des règles par défaut et des personnalisations utilisateur
-- Simplification complète du PromptBuilder
-- Ajout d'un bloc PROJECT afin de fournir davantage de contexte à l'IA
+🔧 Mise à jour optimisée
+- Tous les utilisateurs (GPU et CPU) téléchargent maintenant la version CPU (~200 Mo) pour les mises à jour
+- Les DLLs CUDA sont conservées lors de la mise à jour pour les utilisateurs GPU
+- Évite le téléchargement de 850 Mo à chaque mise à jour
 
-⚙️ Nouvelle fenêtre « Préférences IA »
-- Remplacement de l'ancienne fenêtre de style
-- Interface unique pour modifier toutes les catégories de prompts
-- Gestion des profils : Créateur, Introduction, Miniature, Hook
-- Consultation des règles d'APO Studio en lecture seule
-- Sauvegarde des préférences utilisateur directement depuis l'application
-
-🧹 Nettoyage
-- Suppression de l'ancienne architecture des prompts
-- Suppression des fichiers devenus obsolètes
-- Code simplifié, plus clair et plus facile à maintenir
-
-🔧 Améliorations techniques
-- Refactorisation du moteur de génération des prompts
-- Architecture prête à accueillir de nouvelles catégories : SEO, Description, Shorts, Chapitres...
-
-Mise à jour automatique
-- Détection du type d'installation (GPU/CPU) pour télécharger le bon installeur
-- Barre de progression pendant le téléchargement
+⚙️ Corrections
+- Correction de la logique de téléchargement de la mise à jour
+- Correction du parsing des options Inno Setup dans le workflow
+- Mise à jour des actions GitHub vers les dernières versions (Node 24)
 
 ------------------------------------------------
 

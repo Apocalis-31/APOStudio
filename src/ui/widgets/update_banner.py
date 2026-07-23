@@ -82,7 +82,7 @@ class UpdateBanner(ctk.CTkFrame):
 
         self.info = info
 
-        variant = "GPU (complet)" if info.is_gpu else "CPU (léger)"
+        variant = "CPU (léger)"
 
         self.info_label.configure(
             text=(
