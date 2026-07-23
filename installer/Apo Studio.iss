@@ -24,8 +24,8 @@ DefaultGroupName={#MyAppName}
 
 OutputDir=output
 OutputBaseFilename=APOStudio_Setup_{#MyAppVersion}
-Compression=lzma2
-SolidCompression=yes
+Compression=lzma
+SolidCompression=no
 WizardStyle=modern
 
 ArchitecturesInstallIn64BitMode=x64compatible

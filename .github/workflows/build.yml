@@ -10,8 +10,35 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  version:
     runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(python -c "import re; print(re.search(r'VERSION\s*=\s*\"(.+?)\"', open('src/app_info.py').read()).group(1))")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: version
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        variant: [GPU, CPU]
+        include:
+          - variant: GPU
+            spec: "APO Studio.spec"
+            iss: "installer/Apo Studio.iss"
+            output_pattern: "APOStudio_Setup_*[!C]*.exe"
+          - variant: CPU
+            spec: "APO Studio CPU.spec"
+            iss: "installer/Apo Studio CPU.iss"
+            output_pattern: "APOStudio_Setup_CPU_*.exe"
 
     steps:
       - uses: actions/checkout@v4
@@ -32,45 +59,38 @@ jobs:
           .\.venv\Scripts\activate
           python tools/generate_version_info.py
 
-      - name: Get version
-        id: version
-        shell: bash
-        run: |
-          VERSION=$(python -c "import re; print(re.search(r'VERSION\s*=\s*\"(.+?)\"', open('src/app_info.py').read()).group(1))")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Build executable (GPU)
+      - name: Build executable (${{ matrix.variant }})
         run: |
           .\.venv\Scripts\activate
-          python -m PyInstaller --clean "APO Studio.spec"
+          python -m PyInstaller --clean "${{ matrix.spec }}"
 
-      - name: Compile Inno Setup (GPU)
+      - name: Compile Inno Setup (${{ matrix.variant }})
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
-          path: installer/Apo Studio.iss
-          options: /O+
+          path: ${{ matrix.iss }}
+          options: /O+ /Q
 
-      - name: Build executable (CPU)
-        run: |
-          .\.venv\Scripts\activate
-          python -m PyInstaller --clean "APO Studio CPU.spec"
-
-      - name: Compile Inno Setup (CPU)
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
-        with:
-          path: installer/Apo Studio CPU.iss
-          options: /O+
-
-      - name: Upload installers
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: APOStudio_Setup_${{ steps.version.outputs.version }}
-          path: |
-            installer/output/APOStudio_Setup_${{ steps.version.outputs.version }}.exe
-            installer/output/APOStudio_Setup_CPU_${{ steps.version.outputs.version }}.exe
+          name: installer-${{ matrix.variant }}
+          path: installer/output/APOStudio_Setup*.exe
+
+  release:
+    needs: [version, build]
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: installer/output
+          pattern: installer-*
+          merge-multiple: true
 
       - name: Delete old release assets
-        if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           TAG="${{ github.ref_name }}"
@@ -81,14 +101,13 @@ jobs:
           done
 
       - name: Create release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          name: "APO Studio v${{ steps.version.outputs.version }}"
+          name: "APO Studio v${{ needs.version.outputs.version }}"
           tag_name: ${{ github.ref_name }}
           body_path: installer/changelog.txt
           files: |
-            installer/output/APOStudio_Setup_${{ steps.version.outputs.version }}.exe
-            installer/output/APOStudio_Setup_CPU_${{ steps.version.outputs.version }}.exe
+            installer/output/APOStudio_Setup_${{ needs.version.outputs.version }}.exe
+            installer/output/APOStudio_Setup_CPU_${{ needs.version.outputs.version }}.exe
           draft: false
           prerelease: false
