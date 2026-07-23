@@ -526,6 +526,8 @@ class HomePage(ctk.CTkFrame):
         self.session_status.pack(
             side="top",
             fill="x",
+            padx=UI.PAD,
+            pady=(0, 20),
             expand=False
         )
 
