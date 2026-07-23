@@ -76,7 +76,7 @@ jobs:
           else
             DIST_DIR="dist/Apo Studio"
           fi
-          cp "dist/APOStudio_Updater/APOStudio_Updater.exe" "$DIST_DIR/"
+          cp "dist/APOStudio_Updater.exe" "$DIST_DIR/"
 
       - name: Generate manifest (${{ matrix.variant }})
         if: matrix.variant == 'CPU'
