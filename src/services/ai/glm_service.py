@@ -32,9 +32,10 @@ class GLMService:
         MAX_RETRY = 5
 
 
-        def __init__(self, ui=None):
+        def __init__(self, ui=None, cancel_event=None):
 
             self.ui = ui
+            self.cancel_event = cancel_event
 
             config = ConfigService()
 
@@ -127,6 +128,10 @@ class GLMService:
 
             for attempt in range(self.MAX_RETRY):
 
+                if self.cancel_event and self.cancel_event.is_set():
+                    from workers.transcription_worker import Cancelled
+                    raise Cancelled()
+
                 start = time.perf_counter()
 
                 self.debug(
@@ -180,7 +185,13 @@ class GLMService:
                             f"🔄 Nouvelle tentative dans {wait} secondes..."
                         )
 
-                        time.sleep(wait)
+                        elapsed_wait = 0
+                        while elapsed_wait < wait:
+                            if self.cancel_event and self.cancel_event.is_set():
+                                from workers.transcription_worker import Cancelled
+                                raise Cancelled()
+                            time.sleep(1)
+                            elapsed_wait += 1
 
                         continue
 

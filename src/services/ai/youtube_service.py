@@ -9,13 +9,14 @@ from services.config_service import ConfigService
 
 class YoutubeService:
 
-    def __init__(self, ui):
+    def __init__(self, ui, cancel_event=None):
 
         self.ui = ui
+        self.cancel_event = cancel_event
 
     def generate(self, project: Project):
 
-        provider = AIFactory.create(self.ui)
+        provider = AIFactory.create(self.ui, cancel_event=self.cancel_event)
 
         self.ui.log(f"🤖 IA utilisée : {provider.__class__.__name__}")
 

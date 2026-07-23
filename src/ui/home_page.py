@@ -14,7 +14,7 @@ import os
 from services.path_service import PathService
 from ui.widgets.update_banner import UpdateBanner
 from services.update_service import UpdateService
-from ui.ui_scale import UI
+from ui.ui_scale import UI, px
 
 import time
 
@@ -84,6 +84,11 @@ class HomePage(ctk.CTkFrame):
             fg_color="transparent"
         )
 
+        self.dashboard_center = ctk.CTkFrame(
+            self.dashboard_frame,
+            fg_color="transparent"
+        )
+
         self.console_frame = ctk.CTkFrame(
             self,
             fg_color="transparent",
@@ -101,6 +106,11 @@ class HomePage(ctk.CTkFrame):
             padx=UI.PAD_WINDOW
         )
 
+        self.dashboard_center.pack(
+            anchor="center",
+            fill="x"
+        )
+
         self.console_frame.pack(
             fill="both",
             expand=True,
@@ -111,14 +121,14 @@ class HomePage(ctk.CTkFrame):
         # Dashboard
 
         self.actions_card = ctk.CTkFrame(
-            self.dashboard_frame,
+            self.dashboard_center,
             corner_radius=12,
             border_width=1,
             border_color="#3c3c3c"
         )
 
         self.status_card = ctk.CTkFrame(
-            self.dashboard_frame,
+            self.dashboard_center,
             corner_radius=12,
             border_width=1,
             border_color="#3c3c3c"
@@ -199,8 +209,13 @@ class HomePage(ctk.CTkFrame):
             font=("Segoe UI", UI.FONT_SECTION, "bold")
         )
 
-        self.new_project_button = ctk.CTkButton(
+        self.actions_row = ctk.CTkFrame(
             self.actions_card,
+            fg_color="transparent"
+        )
+
+        self.new_project_button = ctk.CTkButton(
+            self.actions_row,
             text="🎬 Nouveau Projet",
             height=UI.BUTTON_HEIGHT,
             fg_color="#8E1F45",
@@ -209,12 +224,36 @@ class HomePage(ctk.CTkFrame):
         )
 
         self.batch_button = ctk.CTkButton(
-            self.actions_card,
+            self.actions_row,
             text="📚 Traitement par lot",
             fg_color="#8E1F45",
             hover_color="#6E1736",
             height=UI.BUTTON_HEIGHT,
             command=self.batch_project
+        )
+
+        self.stop_row = ctk.CTkFrame(
+            self.actions_card,
+            fg_color="transparent"
+        )
+
+        self.stop_button = ctk.CTkButton(
+            self.stop_row,
+            text="⏹ Stop",
+            fg_color="#8E1F45",
+            hover_color="#6E1736",
+            height=UI.BUTTON_HEIGHT,
+            command=self.stop_processing,
+            state="disabled"
+        )
+
+        self.restart_button = ctk.CTkButton(
+            self.stop_row,
+            text="🔄 Relancer",
+            fg_color="#8E1F45",
+            hover_color="#6E1736",
+            height=UI.BUTTON_HEIGHT,
+            command=self.restart_processing
         )
 
         self.separator = ctk.CTkFrame(
@@ -291,8 +330,19 @@ class HomePage(ctk.CTkFrame):
 
     def build_console(self):
 
-        self.console_title = ctk.CTkLabel(
+        self.console_header = ctk.CTkFrame(
             self.console_card,
+            fg_color="transparent"
+        )
+
+        self.console_header.pack(
+            fill="x",
+            padx=UI.PAD,
+            pady=(20, 10)
+        )
+
+        self.console_title = ctk.CTkLabel(
+            self.console_header,
 
             text="🖥 Console",
 
@@ -301,9 +351,21 @@ class HomePage(ctk.CTkFrame):
         )
 
         self.console_title.pack(
-            anchor="w",
-            padx=UI.PAD,
-            pady=(20, 10)
+            side="left"
+        )
+
+        self._auto_scroll = True
+
+        self.scroll_btn = ctk.CTkButton(
+            self.console_header,
+            text="⬇",
+            width=UI.BUTTON_HEIGHT,
+            height=UI.BUTTON_HEIGHT,
+            font=("Segoe UI", 16),
+            fg_color="#8E1F45",
+            hover_color="#6E1736",
+            corner_radius=10,
+            command=self._scroll_to_bottom
         )
 
         self.log_box = ctk.CTkTextbox(
@@ -332,7 +394,58 @@ class HomePage(ctk.CTkFrame):
             state="disabled"
         )
 
+        self._bind_scroll_events()
+
         self.place_dashboard()
+
+    # ==================================================
+    # Scroll management
+    # ==================================================
+
+    def _bind_scroll_events(self):
+
+        widget = self.log_box._textbox
+
+        widget.bind("<MouseWheel>", self._on_scroll, add="+")
+        widget.bind("<Button-4>", self._on_scroll, add="+")
+        widget.bind("<Button-5>", self._on_scroll, add="+")
+
+        self.log_box._y_scrollbar.configure(
+            command=self._on_scrollbar
+        )
+
+    def _on_scroll(self, event):
+
+        self.after(50, self._check_at_bottom)
+
+    def _on_scrollbar(self, *args):
+
+        self.log_box._textbox.yview(*args)
+        self.after(50, self._check_at_bottom)
+
+    def _check_at_bottom(self):
+
+        view = self.log_box._textbox.yview()
+
+        at_bottom = view[1] >= 0.999
+
+        if at_bottom and not self._auto_scroll:
+            self._auto_scroll = True
+            self.scroll_btn.pack_forget()
+        elif not at_bottom and self._auto_scroll:
+            self._auto_scroll = False
+            self.scroll_btn.pack(
+                side="right",
+                padx=(10, 0)
+            )
+
+    def _scroll_to_bottom(self):
+
+        self._auto_scroll = True
+        self.scroll_btn.pack_forget()
+        self.log_box.configure(state="normal")
+        self.log_box.see("end")
+        self.log_box.configure(state="disabled")
 
     # ==================================================
 
@@ -343,33 +456,77 @@ class HomePage(ctk.CTkFrame):
         # =====================================
 
         self.actions_title.pack(
+            side="top",
             anchor="w",
             padx=UI.PAD,
-            pady=(20, 15)
+            pady=(20, 15),
+            expand=False
+        )
+
+        self.actions_row.pack(
+            side="top",
+            fill="x",
+            padx=UI.PAD,
+            pady=(0, 10),
+            expand=False
         )
 
         self.new_project_button.pack(
+            side="left",
             fill="x",
-            padx=UI.PAD,
-            pady=(0, 10)
+            expand=True,
+            padx=(0, 5)
         )
 
         self.batch_button.pack(
+            side="left",
+            fill="x",
+            expand=True,
+            padx=(5, 0)
+        )
+
+        self.stop_row.pack(
+            side="top",
             fill="x",
             padx=UI.PAD,
-            pady=(0, 20)
+            pady=(0, 10),
+            expand=False
+        )
+
+        self.stop_button.pack(
+            side="left",
+            fill="x",
+            expand=True,
+            padx=(0, 5)
         )
 
         self.separator.pack(
+            side="top",
             fill="x",
             padx=UI.PAD,
-            pady=(0, 20)
+            pady=(0, 20),
+            expand=False
         )
 
         self.ai_status.pack(
+            side="top",
             fill="x",
             padx=UI.PAD,
-            pady=(0, 20)
+            pady=(0, 20),
+            expand=False
+        )
+
+        self.separator_session.pack(
+            side="top",
+            fill="x",
+            pady=UI.PAD,
+            expand=False
+        )
+
+        self.session_status.pack(
+            side="top",
+            fill="x",
+            expand=False
         )
 
         # =====================================
@@ -377,53 +534,51 @@ class HomePage(ctk.CTkFrame):
         # =====================================
 
         self.status_title.pack(
+            side="top",
             anchor="w",
             padx=UI.PAD,
             pady=(20, 15)
         )
 
         self.current_video.pack(
+            side="top",
             anchor="w",
             padx=UI.PAD,
             pady=(0, 25)
         )
 
         self.processing_status.pack(
+            side="top",
             fill="x",
             padx=UI.PAD,
             pady=(0, 25)
         )
 
         self.separator2.pack(
+            side="top",
             fill="x",
             padx=UI.PAD,
             pady=(0, 20)
         )
 
         self.queue_title.pack(
+            side="top",
             anchor="w",
             padx=UI.PAD,
             pady=(0, 10)
         )
 
         self.queue_progress.pack(
+            side="top",
             anchor="w",
             padx=UI.PAD
         )
 
         self.queue_label.pack(
+            side="top",
             anchor="w",
             padx=UI.PAD,
             pady=(5, 20)
-        )
-
-        self.separator_session.pack(
-            fill="x",
-            pady=UI.PAD
-        )
-
-        self.session_status.pack(
-            fill="x"
         )
 
 
@@ -486,6 +641,14 @@ class HomePage(ctk.CTkFrame):
 
         self.ui_bridge.log(message)
 
+    def stop_processing(self):
+
+        self.queue_manager.stop()
+
+    def restart_processing(self):
+
+        self.queue_manager.restart()
+
     def process_queue(self):
 
         while not self.ui_bridge.queue.empty():
@@ -496,7 +659,10 @@ class HomePage(ctk.CTkFrame):
 
                 self.log_box.configure(state="normal")
                 self.log_box.insert("end", value + "\n")
-                self.log_box.see("end")
+
+                if self._auto_scroll:
+                    self.log_box.see("end")
+
                 self.log_box.configure(state="disabled")
 
             elif event == "progress":
@@ -517,6 +683,7 @@ class HomePage(ctk.CTkFrame):
 
             elif event == "session_started":
 
+                self.stop_button.configure(state="normal")
 
                 if self.session_start is None:
 
@@ -525,6 +692,8 @@ class HomePage(ctk.CTkFrame):
                     self.update_session_timer()
 
             elif event == "session_finished":
+
+                self.stop_button.configure(state="disabled")
 
                 self.session_start = None
 
@@ -539,6 +708,17 @@ class HomePage(ctk.CTkFrame):
             elif event == "video_added":
                 self.statistics.add_video()
                 self.refresh_session_statistics()
+
+            elif event == "queue_update_buttons":
+                if value:
+                    self.restart_button.pack(
+                        side="left",
+                        fill="x",
+                        expand=True,
+                        padx=(5, 0)
+                    )
+                else:
+                    self.restart_button.pack_forget()
 
         self.after(100, self.process_queue)
 
@@ -560,15 +740,19 @@ class HomePage(ctk.CTkFrame):
         waiting = data["waiting"]
 
         if waiting:
-
             text = "\n".join(
                 f"⏳ {video}"
                 for video in waiting
             )
-
+            self.restart_button.pack(
+                side="left",
+                fill="x",
+                expand=True,
+                padx=(5, 0)
+            )
         else:
-
             text = "✅ Aucune vidéo en attente"
+            self.restart_button.pack_forget()
 
         self.queue_label.configure(
             text=text

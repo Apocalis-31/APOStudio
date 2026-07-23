@@ -84,7 +84,6 @@ class TopBar(ctk.CTkFrame):
             command=self.open_ai_style
         )
 
-        # Plus d'espace entre les boutons
         self.projects_button.pack(side="left", padx=8)
         self.workflow_button.pack(side="left", padx=8)
         self.ai_style_button.pack(side="left", padx=8)

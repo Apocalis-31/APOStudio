@@ -44,9 +44,10 @@ from services.video.video_info import VideoInfo
 
 class WhisperService:
 
-    def __init__(self, ui):
+    def __init__(self, ui, cancel_event=None):
 
         self.ui = ui
+        self.cancel_event = cancel_event
 
         self.ui.log("Chargement du modele Whisper...")
 
@@ -100,7 +101,9 @@ class WhisperService:
 
     def transcribe(self, project: Project):
 
-
+        if self.cancel_event and self.cancel_event.is_set():
+            from workers.transcription_worker import Cancelled
+            raise Cancelled()
 
         start = time.perf_counter()
 
