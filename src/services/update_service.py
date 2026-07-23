@@ -71,5 +71,5 @@ class UpdateService:
             release_name=release_name,
             download_url=download_url,
             release_notes=release_notes,
-            is_gpu=has_gpu
+            is_gpu=UpdateService.is_gpu_install()
         )
