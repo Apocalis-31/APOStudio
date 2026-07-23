@@ -62,7 +62,7 @@ class UpdateService:
         if download_url is None:
             download_url = assets[0]["browser_download_url"]
 
-        has_update = latest_version != VERSION
+        has_update = tuple(map(int, latest_version.split("."))) > tuple(map(int, VERSION.split(".")))
 
         return UpdateInfo(
             current_version=VERSION,
