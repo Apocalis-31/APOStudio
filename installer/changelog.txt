@@ -1,14 +1,10 @@
-🚀 APO Studio v1.1.3
+🚀 APO Studio v1.1.4
 
-Nouveaux fournisseurs IA + optimisations
+Améliorations de l'interface utilisateur
 
 ✨ Nouveautés
-- Fournisseur NVIDIA NIM : DeepSeek V4 Flash/Pro, Gemma 4, MiniMax M3, Nemotron 3 Ultra, Qwen3.5
-- Fournisseur Google Gemini : Gemini 3.6/3.5 Flash, 3.1 Pro, 2.5 Pro/Flash
-- Menu déroulant avec modèles pré-remplis + option personnalisé pour NVIDIA et Gemini
-- Système de mise à jour par patch (updater.exe intégré)
+- Coche ✓ sur le fournisseur IA actif dans le menu déroulant
+- Clé API masquée par défaut avec bouton œil pour afficher/masquer
 
-⚙️ Optimisations
-- Exclusion des modules inutiles : scipy, onnxruntime, torchvision, torchaudio (-128 Mo)
-- Correction du build updater.exe (chemin de sortie corrigé)
-- Icône ajoutée à l'updater.exe
+⚙️ Corrections
+- Alignement de la section Session avec les autres éléments du dashboard
