@@ -5,6 +5,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+EXCLUDED_FILES = {"APOStudio_Updater.exe"}
+
+
 def create_patch_zip(version: str, changed_files: list[str], dist_dir: Path) -> Path:
 
     output_dir = ROOT / "installer" / "output"
@@ -13,6 +16,9 @@ def create_patch_zip(version: str, changed_files: list[str], dist_dir: Path) -> 
 
     with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as zf:
         for f in changed_files:
+            if f in EXCLUDED_FILES:
+                print(f"  - {f} (excluded)")
+                continue
             src = dist_dir / f
             if src.exists():
                 zf.write(src, f)
