@@ -144,15 +144,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           CURR="${{ needs.version.outputs.version }}"
+          RELEASES=$(gh release list --repo ${{ github.repository }} --limit 20 --json tagName,isLatest -q '.[].tagName')
           PREV=""
-          while IFS=$'\t' read -r tag status; do
+          while IFS= read -r tag; do
             TAG_CLEAN=$(echo "$tag" | sed 's/^v//')
-            if [ "$TAG_CLEAN" != "$CURR" ] && [ "$status" = "Published" ]; then
+            if [ "$TAG_CLEAN" != "$CURR" ]; then
               PREV="$TAG_CLEAN"
               break
             fi
-          done < <(gh release list --repo ${{ github.repository }} --limit 20 | awk -F'\t' '{print $1 "\t" $6}')
+          done <<< "$RELEASES"
           echo "previous=$PREV" >> "$GITHUB_OUTPUT"
+          echo "Previous version: $PREV"
 
       - name: Download previous manifest
         if: steps.prev.outputs.previous != ''
