@@ -67,23 +67,30 @@ class SettingsWindow(ctk.CTkToplevel):
         )
         provider_title.pack(pady=(35, 5))
 
+        self._all_providers = [
+            "openai",
+            "claude",
+            "nvidia",
+            "gemini",
+            "ollama",
+            "lmstudio",
+            "glm"
+        ]
+
         self.provider_combo = ctk.CTkComboBox(
             self,
             values=[
-                "openai",
-                "claude",
-                "nvidia",
-                "gemini",
-                "ollama",
-                "lmstudio",
-                "glm"
+                (p + " ✓" if p == provider else p)
+                for p in self._all_providers
             ],
             width=self.FIELD_WIDTH,
             command=self.on_provider_changed
         )
 
         self.provider_combo.pack()
-        self.provider_combo.set(provider)
+        self.provider_combo.set(
+            provider + " ✓" if provider else provider
+        )
 
         # =====================================================
         # Clé API / URL
@@ -96,13 +103,34 @@ class SettingsWindow(ctk.CTkToplevel):
         )
         self.api_title.pack(pady=(20, 5))
 
-        self.api_entry = ctk.CTkEntry(
-            self,
-            width=self.FIELD_WIDTH,
-            show="*"
-        )
+        self.api_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.api_frame.pack()
 
-        self.api_entry.pack()
+        self.api_entry = ctk.CTkEntry(
+            self.api_frame,
+            width=self.FIELD_WIDTH - 40,
+            show=""
+        )
+        self.api_entry.pack(side="left")
+
+        self._api_visible = False
+
+        self.api_eye_btn = ctk.CTkButton(
+            self.api_frame,
+            text="👁",
+            width=32,
+            height=32,
+            corner_radius=6,
+            command=self._toggle_api_visibility
+        )
+        self.api_eye_btn.pack(side="left", padx=(6, 0))
+
+        self._real_api_value = value1 or ""
+
+        if self._real_api_value:
+            masked = "•" * min(len(self._real_api_value), 32)
+            self.api_entry.delete(0, "end")
+            self.api_entry.insert(0, masked)
 
         # =====================================================
         # Modèle
@@ -272,14 +300,19 @@ class SettingsWindow(ctk.CTkToplevel):
 
     def save_settings(self):
 
-        provider = self.provider_combo.get()
+        provider = self.provider_combo.get().replace(" ✓", "")
 
         self.config_service.set("ai.provider", provider)
 
         if provider in API_KEY_PROVIDERS:
+            key_value = (
+                self.api_entry.get().strip()
+                if self._api_visible
+                else self._real_api_value
+            )
             self.config_service.set(
                 f"{provider}.api_key",
-                self.api_entry.get()
+                key_value
             )
         else:
             self.config_service.set(
@@ -305,23 +338,56 @@ class SettingsWindow(ctk.CTkToplevel):
 
     def on_provider_changed(self, provider):
 
+        provider = provider.replace(" ✓", "")
+
+        self.provider_combo.configure(
+            values=[
+                (p + " ✓" if p == provider else p)
+                for p in self._all_providers
+            ]
+        )
+        self.provider_combo.set(provider + " ✓")
+
         if provider in API_KEY_PROVIDERS:
             value1 = self.config_service.get(f"{provider}.api_key")
             label = "🔑 Clé API"
-            self.api_entry.configure(show="*")
+            self.api_eye_btn.pack(side="left", padx=(6, 0))
         else:
             value1 = self.config_service.get(f"{provider}.url")
             label = "🌐 URL"
-            self.api_entry.configure(show="")
+            self.api_eye_btn.pack_forget()
 
         value2 = self.config_service.get(f"{provider}.model")
 
         self.api_title.configure(text=label)
 
+        self._real_api_value = value1 or ""
+        self._api_visible = False
+        self.api_eye_btn.configure(text="👁")
         self.api_entry.delete(0, "end")
-        self.api_entry.insert(0, value1 or "")
+
+        if provider in API_KEY_PROVIDERS and self._real_api_value:
+            masked = "•" * min(len(self._real_api_value), 32)
+            self.api_entry.insert(0, masked)
+        else:
+            self.api_entry.insert(0, self._real_api_value)
 
         self._build_model_widget(provider, value2)
+
+    def _toggle_api_visibility(self):
+        if self._api_visible:
+            self._real_api_value = self.api_entry.get().strip()
+            self.api_entry.delete(0, "end")
+            if self._real_api_value:
+                masked = "•" * min(len(self._real_api_value), 32)
+                self.api_entry.insert(0, masked)
+            self.api_eye_btn.configure(text="👁")
+            self._api_visible = False
+        else:
+            self.api_entry.delete(0, "end")
+            self.api_entry.insert(0, self._real_api_value)
+            self.api_eye_btn.configure(text="🔒")
+            self._api_visible = True
 
     def browse_projects(self):
 
