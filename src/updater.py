@@ -3,6 +3,22 @@ import sys
 import time
 import zipfile
 import subprocess
+import ctypes
+
+
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except Exception:
+        return False
+
+
+def request_admin():
+    script = sys.executable if getattr(sys, 'frozen', False) else __file__
+    params = " ".join(f'"{a}"' for a in sys.argv[1:])
+    ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", script, params, None, 1
+    )
 
 
 def wait_for_exit(exe_path, timeout=30):
@@ -18,6 +34,10 @@ def wait_for_exit(exe_path, timeout=30):
 
 
 def main():
+    if not is_admin():
+        request_admin()
+        return 0
+
     if len(sys.argv) < 3:
         return 1
 
