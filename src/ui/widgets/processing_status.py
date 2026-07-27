@@ -72,15 +72,38 @@ class ProcessingStatus(ctk.CTkFrame):
             if index < current_index:
 
                 icon = "✔"
+                color = "#4CAF50"
 
             elif index == current_index:
 
                 icon = "⏳"
+                color = "#4CAF50"
 
             else:
 
                 icon = "○"
+                color = None
 
-            self.steps[key].configure(
-                text=f"{icon} {labels[key]}"
+            label = self.steps[key]
+            label.configure(text=f"{icon} {labels[key]}")
+
+            if color:
+                label.configure(text_color=color)
+            else:
+                label.configure(text_color="gray")
+
+    def reset(self):
+
+        labels = {
+            "project": "Création du projet",
+            "whisper": "Transcription Whisper",
+            "youtube": "Génération YouTube",
+            "thumbnail": "Génération miniature",
+            "save": "Sauvegarde"
+        }
+
+        for key, label in self.steps.items():
+            label.configure(
+                text=f"○ {labels[key]}",
+                text_color="gray"
             )

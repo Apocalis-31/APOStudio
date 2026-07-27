@@ -247,13 +247,10 @@ class HomePage(ctk.CTkFrame):
             state="disabled"
         )
 
-        self.restart_button = ctk.CTkButton(
-            self.stop_row,
-            text="🔄 Relancer",
-            fg_color="#8E1F45",
-            hover_color="#6E1736",
-            height=UI.BUTTON_HEIGHT,
-            command=self.restart_processing
+        self.stop_button.pack(
+            side="left",
+            fill="x",
+            expand=True
         )
 
         self.separator = ctk.CTkFrame(
@@ -647,10 +644,6 @@ class HomePage(ctk.CTkFrame):
 
         self.queue_manager.stop()
 
-    def restart_processing(self):
-
-        self.queue_manager.restart()
-
     def process_queue(self):
 
         while not self.ui_bridge.queue.empty():
@@ -673,6 +666,7 @@ class HomePage(ctk.CTkFrame):
 
             elif event == "current_video":
 
+                self.processing_status.reset()
                 self.set_current_video(value)
 
             elif event == "queue_update":
@@ -712,15 +706,7 @@ class HomePage(ctk.CTkFrame):
                 self.refresh_session_statistics()
 
             elif event == "queue_update_buttons":
-                if value:
-                    self.restart_button.pack(
-                        side="left",
-                        fill="x",
-                        expand=True,
-                        padx=(5, 0)
-                    )
-                else:
-                    self.restart_button.pack_forget()
+                pass
 
         self.after(100, self.process_queue)
 
@@ -745,12 +731,6 @@ class HomePage(ctk.CTkFrame):
             text = "\n".join(
                 f"⏳ {video}"
                 for video in waiting
-            )
-            self.restart_button.pack(
-                side="left",
-                fill="x",
-                expand=True,
-                padx=(5, 0)
             )
         else:
             text = "✅ Aucune vidéo en attente"

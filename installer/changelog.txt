@@ -1,10 +1,19 @@
-🚀 APO Studio v1.1.4
+🚀 APO Studio v1.1.5
 
-Améliorations de l'interface utilisateur
+Améliorations UX et corrections de bugs
 
 ✨ Nouveautés
-- Coche ✓ sur le fournisseur IA actif dans le menu déroulant
-- Clé API masquée par défaut avec bouton œil pour afficher/masquer
+- Barre d'étapes en vert pour un suivi clair du traitement
+- Progression de la transcription visible (segments traités en temps réel)
+- Compteur dynamique des modules actifs dans le workflow
 
-⚙️ Corrections
-- Alignement de la section Session avec les autres éléments du dashboard
+🔧 Corrections
+- Suppression du bouton Relancer (redondant avec Nouveau projet/Traitement par lot)
+- Transcription désormais obligatoire (plus de toggle)
+- Fix du découpage intelligent : la fenêtre SmartCut ne s'ouvrait plus après transcription
+- Reset des étapes de traitement entre chaque vidéo
+
+⚙️ Système de mise à jour
+- Demande de droits administrateur pour l'updater.exe (Program Files)
+- Exclusion de l'updater.exe du zip patch
+- Détection fiable de la version précédente via JSON

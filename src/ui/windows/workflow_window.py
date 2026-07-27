@@ -29,10 +29,6 @@ class WorkflowWindow(ctk.CTkToplevel):
 
         workflow = WorkflowConfig().load()
 
-        self.transcription = ctk.BooleanVar(
-                value=workflow.is_enabled("transcription")
-            )
-
         self.youtube = ctk.BooleanVar(
                 value=workflow.is_enabled("youtube")
             )
@@ -43,7 +39,13 @@ class WorkflowWindow(ctk.CTkToplevel):
         
         self.vision = ctk.BooleanVar(
                 value=workflow.is_enabled("vision")
-)
+        )
+
+        self._all_modules = [
+            ("youtube", self.youtube),
+            ("thumbnail", self.thumbnail),
+            ("vision", self.vision),
+        ]
 
         # ==========================
         # Titre
@@ -75,12 +77,6 @@ class WorkflowWindow(ctk.CTkToplevel):
         # ==========================
 
         self.add_module(
-            "🎙️ Transcription",
-            "Analyse la vidéo et génère le transcript.",
-            self.transcription
-        )
-
-        self.add_module(
             "🤖 Génération YouTube",
             "Produit le youtube.json ainsi que l'intro.",
             self.youtube
@@ -104,7 +100,7 @@ class WorkflowWindow(ctk.CTkToplevel):
 
         self.status = ctk.CTkLabel(
             self,
-            text="Modules actifs : 3 / 3",
+            text="",
             font=("Segoe UI", 12),
             text_color="gray"
         )
@@ -112,6 +108,8 @@ class WorkflowWindow(ctk.CTkToplevel):
         self.status.pack(
             pady=(15, 20)
         )
+
+        self._update_counter()
 
         # ==========================
         # Bouton
@@ -170,13 +168,24 @@ class WorkflowWindow(ctk.CTkToplevel):
             text_color="#AAAAAA"
         ).pack(anchor="w", pady=(3, 0))
 
-        ctk.CTkCheckBox(
+        cb = ctk.CTkCheckBox(
             frame,
             text="Activer",
-            variable=variable
+            variable=variable,
+            command=self._update_counter
         ).pack(
             side="right",
             padx=18
+        )
+
+    def _update_counter(self):
+        total = len(self._all_modules) + 1
+        active = 1
+        for _, var in self._all_modules:
+            if var.get():
+                active += 1
+        self.status.configure(
+            text=f"Modules actifs : {active} / {total}"
         )
 
     # =====================================================
@@ -185,10 +194,7 @@ class WorkflowWindow(ctk.CTkToplevel):
 
         workflow = Workflow()
 
-        workflow.enabled = []
-
-        if self.transcription.get():
-            workflow.enabled.append("transcription")
+        workflow.enabled = ["transcription"]
 
         if self.youtube.get():
             workflow.enabled.append("youtube")

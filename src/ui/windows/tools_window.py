@@ -219,7 +219,7 @@ class ToolsWindow(ctk.CTkToplevel):
                     "transcription"
                 ],
 
-                on_finished=lambda: self.after(
+                on_finished=lambda cancelled=False: self.after(
                     0,
                     lambda: self.smart_cut_ready(video)
                 )

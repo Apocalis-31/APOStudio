@@ -113,16 +113,21 @@ class WhisperService:
 
         self.ui.log(f"Duree : {duration:.1f} secondes")
 
-        self.ui.log("Debut de la transcription...")
-
+        self.ui.log("Début de la transcription...")
         self.ui.log("Transcription en cours...")
 
-        segments, info = self.model.transcribe(
+        raw_segments, info = self.model.transcribe(
             str(project.video_path),
             language="fr"
         )
 
-        segments = list(segments)
+        segments = []
+        for seg in raw_segments:
+            segments.append(seg)
+            if len(segments) % 10 == 0:
+                self.ui.log(
+                    f"  ⏳ {len(segments)} segments traités..."
+                )
 
         txt_output = project.project_path / "transcript.txt"
         json_output = project.project_path / "transcript.json"
