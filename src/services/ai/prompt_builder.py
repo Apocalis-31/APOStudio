@@ -121,7 +121,7 @@ class PromptBuilder:
 
             f"Series: {project.series}",
 
-            f"Episode: {project.episode if project.episode is not None else 'N/A'}",
+            f"Episode: {project.next_episode if project.next_episode is not None else 'N/A'}",
 
             f"Video: {project.video_path.name}",
 

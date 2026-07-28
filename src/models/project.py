@@ -7,8 +7,11 @@ class Project:
 
     name: str
     series: str
-    episode: str | None
-    video_path: Path
+
+    # Prochain épisode qui sera généré
+    next_episode: int = 1
+
+    video_path: Path = None
 
     project_path: Path | None = None
 
@@ -19,33 +22,21 @@ class Project:
 
         data = asdict(self)
 
-        # Les objets Path ne sont pas compatibles JSON
         data["video_path"] = str(self.video_path)
 
         if self.project_path is not None:
             data["project_path"] = str(self.project_path)
 
         return data
-    
+
     @classmethod
-    def from_dict(
-        cls,
-        data: dict
-    ):
-
-        episode = data.get("episode")
-
-        if episode is not None:
-            episode = int(episode)
+    def from_dict(cls, data: dict):
 
         project = cls(
 
             name=data["name"],
-
             series=data["series"],
-
-            episode=episode,
-
+            next_episode=int(data.get("next_episode") or 1),
             video_path=Path(data["video_path"])
 
         )

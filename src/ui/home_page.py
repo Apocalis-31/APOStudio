@@ -734,7 +734,6 @@ class HomePage(ctk.CTkFrame):
             )
         else:
             text = "✅ Aucune vidéo en attente"
-            self.restart_button.pack_forget()
 
         self.queue_label.configure(
             text=text

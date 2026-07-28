@@ -121,14 +121,7 @@ class WhisperService:
             language="fr"
         )
 
-        segments = []
-        for seg in raw_segments:
-            segments.append(seg)
-            if len(segments) % 10 == 0:
-                self.ui.log(
-                    f"  ⏳ {len(segments)} segments traités..."
-                )
-
+        segments = list(raw_segments)
         txt_output = project.project_path / "transcript.txt"
         json_output = project.project_path / "transcript.json"
 

@@ -62,15 +62,15 @@ class SmartCutWindow(ctk.CTkToplevel):
             value=self.project.series
         )
 
-        episode = self.project.episode or 0
+        episode = self.project.next_episode or 0
 
-        if self.project.episode is None:
+        if self.project.next_episode is None:
 
             first_episode = 1
 
         else:
 
-            first_episode = self.project.episode + 1
+            first_episode = self.project.next_episode + 1
 
         self.first_episode = ctk.StringVar(
             value=str(first_episode)

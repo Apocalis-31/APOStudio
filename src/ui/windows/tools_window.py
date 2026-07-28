@@ -209,6 +209,21 @@ class ToolsWindow(ctk.CTkToplevel):
             self.ui.log("🎬 Préparation de la VOD")
             self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
+            # ==========================================
+            # Callback appelé à la fin de la transcription
+            # ==========================================
+
+            def finished(cancelled=False):
+
+                self.ui.log("DEBUG : callback reçu")
+
+                self.after(
+                    0,
+                    lambda: self.smart_cut_ready(video)
+                )
+
+            # ==========================================
+
             TranscriptionWorker(
 
                 video,
@@ -219,10 +234,7 @@ class ToolsWindow(ctk.CTkToplevel):
                     "transcription"
                 ],
 
-                on_finished=lambda cancelled=False: self.after(
-                    0,
-                    lambda: self.smart_cut_ready(video)
-                )
+                on_finished=finished
 
             ).start()
 
@@ -232,6 +244,7 @@ class ToolsWindow(ctk.CTkToplevel):
             self,
             video
         ):
+            self.ui.log("DEBUG : smart_cut_ready()")
 
             project = VideoResolver(
                 self.ui.ui_bridge

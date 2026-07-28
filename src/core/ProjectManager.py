@@ -49,7 +49,7 @@ class ProjectManager:
         project = Project(
             name=name,
             series=parsed["series"],
-            episode=parsed["episode"],
+            next_episode=parsed.get("episode") or 1,
             video_path=video,
         )
 
@@ -61,9 +61,9 @@ class ProjectManager:
         ui.step("project")
 
 
-
+        ui.log("DEBUG : sauvegarde finale")
         storage.save(project)
-
+        ui.log("DEBUG : projet sauvegardé")
         # ==========================================
         # Transcription
         # ==========================================

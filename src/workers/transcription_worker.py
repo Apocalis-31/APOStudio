@@ -1,5 +1,6 @@
 import threading
 import traceback
+
 from core.ProjectManager import ProjectManager
 from services.ai.glm_service import _translate_error
 
@@ -19,18 +20,22 @@ class TranscriptionWorker:
         on_finished=None
     ):
 
-        self.forced_modules = forced_modules
         self.video_path = video_path
         self.ui = ui
-        self.on_finished = on_finished
         self.cancel_event = cancel_event
+        self.forced_modules = forced_modules
+        self.on_finished = on_finished
 
         self.manager = ProjectManager()
+
+    # ==========================================
 
     def check_cancelled(self):
 
         if self.cancel_event and self.cancel_event.is_set():
             raise Cancelled()
+
+    # ==========================================
 
     def start(self):
 
@@ -41,7 +46,11 @@ class TranscriptionWorker:
 
         thread.start()
 
+    # ==========================================
+
     def run(self):
+
+        success = False
 
         try:
 
@@ -52,36 +61,29 @@ class TranscriptionWorker:
                 forced_modules=self.forced_modules
             )
 
+            success = True
+
         except Cancelled:
 
             self.ui.log("")
-
             self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-
             self.ui.log("⏹ Traitement annulé")
-
             self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-
-            self._cancelled = True
 
         except Exception as e:
 
             self.ui.log("")
-
             self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-
             self.ui.log("❌ Une erreur est survenue")
-
             self.ui.log(_translate_error(str(e)))
-
             self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
             traceback.print_exc()
 
         finally:
 
-            if self.on_finished:
+            if success and self.on_finished:
+                    
+                self.ui.log("DEBUG : on_finished()")
 
-                self.on_finished(
-                    cancelled=getattr(self, '_cancelled', False)
-                )
+                self.on_finished(cancelled=False)

@@ -1,7 +1,9 @@
 from pathlib import Path
+
 from parsers.filename_parser import FilenameParser
 from services.project_storage import ProjectStorage
 from services.path_service import PathService
+
 
 class VideoResolver:
 
@@ -12,6 +14,8 @@ class VideoResolver:
     # ==========================================
 
     def resolve(self, video_path):
+
+        print("DEBUG : Resolve", video_path)
 
         video = Path(video_path)
 
@@ -29,50 +33,48 @@ class VideoResolver:
         self.ui.log(f"📺 Série : {parsed['series']}")
         self.ui.log(f"🎞️ Épisode : {parsed['episode']}")
 
-        project = self._find_project(parsed)
+        print("DEBUG : Projet trouvé")
 
-        if project:
-            return project
+        return self._find_project(parsed)
 
-        return None
     # ==========================================
 
-    def _find_project(
-            self,
-            parsed
-        ):
+    def _find_project(self, parsed):
 
-            project_folder = (
-                PathService.projects()
-                / parsed["series"]
-            )
+        project_folder = (
+            PathService.projects()
+            / parsed["series"]
+        )
 
-            # Si on cherche un épisode, on descend dans son dossier
-            if parsed["episode"] is not None:
+        self.ui.log("🔍 Recherche du dossier...")
 
-                project_folder /= (
-                    f"Episode {parsed['episode']}"
-                )
+        project_file = (
+            project_folder
+            / f"{parsed['series']}_apo_project.json"
+        )
 
-            self.ui.log("🔍 Recherche du dossier...")
+        self.ui.log(f"DEBUG : {project_file}")
 
-            project_file = (
-                project_folder
-                / "apo_project.json"
-            )
+        if not project_file.exists():
 
-            self.ui.log(
-                f"DEBUG : {project_file}"
-            )
+            self.ui.log("❌ Aucun projet trouvé")
+            return None
 
-            if not project_file.exists():
+        self.ui.log("✅ Projet trouvé")
 
-                self.ui.log("❌ Aucun projet trouvé")
+        project = ProjectStorage().load(project_folder)
 
-                return None
+        # ==========================================
+        # Vérification du transcript
+        # ==========================================
 
-            self.ui.log("✅ Projet trouvé")
+        transcript = project.project_path / "transcript.txt"
 
-            return ProjectStorage().load(
-                project_folder
-            )
+        if not transcript.exists():
+
+            self.ui.log("📝 Aucun transcript trouvé")
+            return None
+
+        self.ui.log("✅ Transcript trouvé")
+
+        return project

@@ -58,7 +58,7 @@ class YoutubeService:
 
         data["version"] = "1.0"
         data["game"] = project.series
-        data["episode"] = project.episode
+        data["episode"] = project.next_episode
 
         with open(output, "w", encoding="utf-8") as f:
 

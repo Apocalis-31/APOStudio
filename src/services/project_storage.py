@@ -2,32 +2,27 @@ import json
 
 from pathlib import Path
 
-from models import project
 from models.project import Project
 from services.path_service import PathService
 
 
 class ProjectStorage:
 
-  
     def save(self, project: Project):
 
         root = PathService.projects()
 
-
+        # Dossier de la série
         series_folder = root / project.series
+        series_folder.mkdir(parents=True, exist_ok=True)
 
+        project.project_path = series_folder
 
-        if project.episode:
-            project_folder = series_folder / f"Episode {project.episode}"
-        else:
-            project_folder = series_folder
-
-        project_folder.mkdir(parents=True, exist_ok=True)
-
-        project.project_path = project_folder
-
-        project_file = project_folder / "apo_project.json"
+        # Fichier projet
+        project_file = (
+            series_folder
+            / f"{project.series}_apo_project.json"
+        )
 
         with open(project_file, "w", encoding="utf-8") as file:
 
@@ -38,8 +33,8 @@ class ProjectStorage:
                 ensure_ascii=False
             )
 
-        return project_folder
-    
+        return series_folder
+
     def load(
         self,
         project_folder: Path
@@ -47,7 +42,7 @@ class ProjectStorage:
 
         project_file = (
             project_folder
-            / "apo_project.json"
+            / f"{project_folder.name}_apo_project.json"
         )
 
         with open(
