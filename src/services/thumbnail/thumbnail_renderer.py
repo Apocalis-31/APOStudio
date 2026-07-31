@@ -9,7 +9,7 @@ class ThumbnailRenderer:
 
     def render(self, project, frame):
 
-        output = project.project_path / "thumbnail.png"
+        output = project.working_path / "thumbnail.png"
 
         shutil.copy(
             frame,

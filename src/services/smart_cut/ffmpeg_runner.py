@@ -1,6 +1,8 @@
 from pathlib import Path
 import subprocess
+
 from services.path_service import PathService
+
 
 class FFmpegRunner:
 
@@ -19,7 +21,7 @@ class FFmpegRunner:
 
         if not plans:
             return
-        
+
         self.ui.log("✂️ Début du découpage des épisodes...")
 
         for plan in plans:
@@ -45,12 +47,22 @@ class FFmpegRunner:
             f"🎬 Découpage de l'épisode {plan.index}..."
         )
 
-        output = (
+        # Dossier de l'épisode
+        episode_folder = (
             project.project_path
-            / f"{project.series} Episode {plan.index}.mp4"
+            / f"Episode {plan.index}"
         )
 
-        from pathlib import Path
+        episode_folder.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        # Vidéo de l'épisode
+        output = (
+            episode_folder
+            / f"{project.series} Episode {plan.index}.mp4"
+        )
 
         ffmpeg = (
             PathService.ffmpeg()
@@ -58,11 +70,8 @@ class FFmpegRunner:
         )
 
         start = max(
-
             0,
-
             plan.start - settings.overlap_seconds
-
         )
 
         duration = plan.end - start
@@ -73,7 +82,7 @@ class FFmpegRunner:
 
             "-y",
 
-           "-ss",
+            "-ss",
             str(start),
 
             "-i",

@@ -122,8 +122,8 @@ class WhisperService:
         )
 
         segments = list(raw_segments)
-        txt_output = project.project_path / "transcript.txt"
-        json_output = project.project_path / "transcript.json"
+        txt_output = project.working_path / "transcript.txt"
+        json_output = project.working_path / "transcript.json"
 
         with open(txt_output, "w", encoding="utf-8") as f:
 

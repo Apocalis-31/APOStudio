@@ -15,7 +15,7 @@ class FrameExtractor:
 
     def extract(self, project):
 
-        transcript = project.project_path / "transcript.json"
+        transcript = project.working_path / "transcript.json"
 
         if not transcript.exists():
 
@@ -31,7 +31,7 @@ class FrameExtractor:
 
         segments = data["segments"]
 
-        frames = project.project_path / "frames"
+        frames = project.working_path / "frames"
         frames.mkdir(exist_ok=True)
 
         # Nettoyage du dossier

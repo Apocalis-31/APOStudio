@@ -13,7 +13,7 @@ class FrameSelector:
 
     def extract(self, project):
 
-        frames = project.project_path / "frames_filtered"
+        frames = project.working_path / "frames_filtered"
 
         images = sorted(frames.glob("*.png"))
 

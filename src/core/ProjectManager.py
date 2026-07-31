@@ -64,6 +64,23 @@ class ProjectManager:
         ui.log("DEBUG : sauvegarde finale")
         storage.save(project)
         ui.log("DEBUG : projet sauvegardé")
+
+        # ==========================================
+        # Dossier de travail
+        # ==========================================
+
+        episode_folder = (
+            project.project_path
+            / f"Episode {project.next_episode}"
+        )
+
+        episode_folder.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        project.working_path = episode_folder
+
         # ==========================================
         # Transcription
         # ==========================================
@@ -123,6 +140,8 @@ class ProjectManager:
         ui.step("save")
 
         storage.save(project)
+
+
 
         ui.log("")
         ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")

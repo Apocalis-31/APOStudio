@@ -18,6 +18,11 @@ class ProjectStorage:
 
         project.project_path = series_folder
 
+        # Si aucun dossier de travail n'est défini,
+        # on travaille par défaut dans le dossier de la série.
+        if project.working_path is None:
+            project.working_path = series_folder
+
         # Fichier projet
         project_file = (
             series_folder
@@ -56,5 +61,8 @@ class ProjectStorage:
         project = Project.from_dict(data)
 
         project.project_path = project_folder
+
+        if project.working_path is None:
+            project.working_path = project_folder
 
         return project

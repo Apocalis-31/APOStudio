@@ -139,7 +139,7 @@ class PromptBuilder:
     ):
 
         transcript = (
-            project.project_path
+            project.working_path
             / "transcript.txt"
         )
 

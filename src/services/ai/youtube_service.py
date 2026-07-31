@@ -31,7 +31,7 @@ class YoutubeService:
             provider_name
         )
 
-        prompt_file = project.project_path / "prompt.txt"
+        prompt_file = project.working_path / "prompt.txt"
 
         with open(prompt_file, "w", encoding="utf-8") as f:
 
@@ -52,7 +52,7 @@ class YoutubeService:
 
         self.ui.log("✅ Réponse reçue !")
 
-        output = project.project_path / "youtube.json"
+        output = project.working_path / "youtube.json"
 
         data = result
 
@@ -78,8 +78,7 @@ class YoutubeService:
 
     def save_intro(self, project: Project, data):
 
-        intro_file = project.project_path / "intro.txt"
-
+        intro_file = project.working_path / "intro.txt"
         subtitle = data["youtube"]["subtitle"]
         intro = data["intro"]["text"]
 

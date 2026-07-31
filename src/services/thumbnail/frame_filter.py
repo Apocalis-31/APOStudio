@@ -16,9 +16,9 @@ class FrameFilter:
 
     def filter(self, project):
 
-        source = project.project_path / "frames"
+        source = project.working_path / "frames"
 
-        destination = project.project_path / "frames_filtered"
+        destination = project.working_path / "frames_filtered"
 
         destination.mkdir(exist_ok=True)
 

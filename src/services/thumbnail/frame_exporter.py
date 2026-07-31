@@ -9,7 +9,7 @@ class FrameExporter:
 
     def export(self, project, frames):
 
-        destination = project.project_path / "selected_frames"
+        destination = project.working_path / "selected_frames"
 
         destination.mkdir(exist_ok=True)
 
