@@ -1,19 +1,19 @@
-🚀 APO Studio v1.1.5
+🚀 APO Studio v1.1.6
 
-Améliorations UX et corrections de bugs
+Refonte de l'architecture des projets et amélioration de la gestion des épisodes
 
 ✨ Nouveautés
-- Barre d'étapes en vert pour un suivi clair du traitement
-- Progression de la transcription visible (segments traités en temps réel)
-- Compteur dynamique des modules actifs dans le workflow
-
+Nouvelle architecture distinguant les données de la série et celles des épisodes
+Création automatique d'un dossier dédié pour chaque épisode (Episode X)
+Isolation complète des fichiers de travail par épisode
+Préparation de l'architecture pour une meilleure reprise des projets et les futures évolutions
 🔧 Corrections
-- Suppression du bouton Relancer (redondant avec Nouveau projet/Traitement par lot)
-- Transcription désormais obligatoire (plus de toggle)
-- Fix du découpage intelligent : la fenêtre SmartCut ne s'ouvrait plus après transcription
-- Reset des étapes de traitement entre chaque vidéo
-
-⚙️ Système de mise à jour
-- Demande de droits administrateur pour l'updater.exe (Program Files)
-- Exclusion de l'updater.exe du zip patch
-- Détection fiable de la version précédente via JSON
+Déplacement des fichiers temporaires (transcript, youtube.json, intro, etc.) dans le dossier de l'épisode
+Correction du pipeline de génération des miniatures (frames, frames_filtered, frames_selected)
+Mise à jour des services (Whisper, PromptBuilder, Thumbnail...) pour utiliser la nouvelle structure des dossiers
+Suppression des conflits de fichiers lors du traitement de plusieurs épisodes d'une même série
+⚙️ Architecture
+Ajout de working_path pour représenter le dossier de travail de l'épisode en cours
+Conservation de project_path pour les ressources communes à la série
+Harmonisation des chemins utilisés par l'ensemble de la chaîne de traitement
+Base technique prête pour les prochaines évolutions d'APO Studio
