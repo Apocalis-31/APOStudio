@@ -1,8 +1,8 @@
-import json
 import base64
 from schemas.youtube_schema import YOUTUBE_SCHEMA
 from openai import OpenAI
 from services.config_service import ConfigService
+from services.ai.json_utils import parse_json_response
 import traceback
 
 class OpenAIService:
@@ -65,9 +65,12 @@ class OpenAIService:
             }
 
         )
-
-        return json.loads(response.output_text)
+        return parse_json_response(
+            response.output_text,
+            context="réponse OpenAI"
+        )
     
+
 
     def ask_vision(
         self,
@@ -133,4 +136,7 @@ class OpenAIService:
             }
         )
 
-        return json.loads(response.output_text)
+        return parse_json_response(
+            response.output_text,
+            context="réponse OpenAI vision"
+        )

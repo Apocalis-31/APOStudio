@@ -165,7 +165,8 @@ class QueueManager:
 
             if cancelled:
                 self.current_entry.fail()
-                self.failed_videos.append(self.current_entry.path)
+                if self.current_entry.path not in self.failed_videos:
+                    self.failed_videos.append(self.current_entry.path)
             else:
                 self.current_entry.finish()
                 self.total_done += 1

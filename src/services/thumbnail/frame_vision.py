@@ -143,10 +143,17 @@ class FrameVision:
                 "GLM n'a renvoyé aucun classement."
             )
 
-        ranking = [
-            int(index)
-            for index in response["ranking"]
-        ]
+        ranking = []
+
+        for index in response["ranking"]:
+
+            try:
+                parsed = GLMParser.parse_index(index)
+            except Exception:
+                continue
+
+            if 1 <= parsed <= image_count:
+                ranking.append(parsed)
 
         if not ranking:
             raise Exception(
@@ -162,16 +169,24 @@ class FrameVision:
         response
     ):
 
-        ranking = response["ranking"]
+        ranking = self._validate_response(
+            response,
+            len(images)
+        )
 
         sorted_frames = []
 
         for index in ranking[:3]:
 
-            parsed = GLMParser.parse_index(index)
-
             sorted_frames.append(
-                images[parsed - 1]["path"]
+                images[index - 1]["path"]
             )
+
+        if not sorted_frames:
+
+            sorted_frames = [
+                image["path"]
+                for image in images[:3]
+            ]
 
         return sorted_frames

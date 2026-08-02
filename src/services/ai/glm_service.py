@@ -1,5 +1,4 @@
 import base64
-import json
 import time
 
 from openai import (
@@ -9,6 +8,7 @@ from openai import (
 )
 
 from services.config_service import ConfigService
+from services.ai.json_utils import parse_json_response
 
 ERROR_TRANSLATIONS = {
     "余额不足或无可用资源包,请充值。": "Solde insuffisant ou aucun forfait disponible. Veuillez recharger votre compte.",
@@ -276,7 +276,10 @@ class GLMService:
             )
 
 
-            return json.loads(text)
+            return parse_json_response(
+                text,
+                context="réponse GLM"
+            )
 
 
         def ask(
@@ -351,7 +354,10 @@ class GLMService:
             )
 
 
-            return json.loads(text)
+            return parse_json_response(
+                text,
+                context="réponse GLM vision"
+            )
 
 
         def _build_vision_content(

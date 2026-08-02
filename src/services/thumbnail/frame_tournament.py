@@ -62,6 +62,9 @@ class FrameTournament:
                     ) - 1
                 )
 
+            if not (0 <= winner_index < len(group)):
+                winner_index = 0
+
             winner = group[winner_index]
 
             winners.append(winner)
