@@ -284,7 +284,7 @@ class ActionButton(QFrame):
 
     clicked = Signal()
 
-    def __init__(self, svg_body, title, subtitle="", size=26):
+    def __init__(self, svg_body, title, subtitle="", size=32):
         super().__init__()
         self.setObjectName("ActionButton")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -295,10 +295,11 @@ class ActionButton(QFrame):
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(2)
+        layout.setSpacing(4)
 
         self._icon = QLabel()
-        self._icon.setPixmap(_svg_pixmap(svg_body, "#e8e8e8", size))
+        icon_size = size - 6
+        self._icon.setPixmap(_svg_pixmap(svg_body, "#e8e8e8", icon_size))
         self._icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self._icon)
 
@@ -418,6 +419,7 @@ class MainWindow(QMainWindow):
         self._waiting_count = 0
         self._update_info = None
         self._update_running = False
+        self._smart_cut_running = False
 
         self.console_window = ConsoleWindow()
 
@@ -559,10 +561,10 @@ class MainWindow(QMainWindow):
         actions = QGridLayout()
         actions.setSpacing(10)
         self.new_project_button = ActionButton(
-            SVG_FOLDER_PLUS, "Nouveau Projet", "Vidéo à analyser"
+            SVG_FOLDER_PLUS, "Nouveau Projet", "Vidéo à analyser", size=32
         )
         self.batch_button = ActionButton(
-            SVG_COPY, "Traitement par Lot", "Plusieurs vidéos"
+            SVG_COPY, "Traitement par Lot", "Plusieurs vidéos", size=32
         )
         actions.addWidget(self.new_project_button, 0, 0)
         actions.addWidget(self.batch_button, 0, 1)
@@ -717,9 +719,6 @@ class MainWindow(QMainWindow):
             self._session_row_layout.addWidget(self.session_card)
 
     def resizeEvent(self, event):
-        if not self.isMaximized() and self.size() != self._normal_size:
-            self.resize(self._normal_size)
-            return
         self._rebuild_session_row()
         super().resizeEvent(event)
 
@@ -1086,6 +1085,10 @@ class MainWindow(QMainWindow):
         self.stop_button.style().unpolish(self.stop_button)
         self.stop_button.style().polish(self.stop_button)
 
+    def _set_smart_cut_running(self, running):
+        self._smart_cut_running = running
+        self._set_running(running)
+
     def _refresh_model_card(self):
         if self.config is None:
             return
@@ -1238,6 +1241,20 @@ class SettingsDialog(QDialog):
 
         self.provider_combo = QComboBox()
         self.provider_combo.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.provider_combo.setStyleSheet("""
+            QComboBox {
+                padding-right: 30px;
+            }
+            QComboBox::drop-down {
+                border: 1px solid #3a3a3a;
+                border-radius: 4px;
+                width: 24px;
+            }
+            QComboBox::down-arrow {
+                width: 12px;
+                height: 12px;
+            }
+        """)
         providers = ["openai", "claude", "glm", "nvidia", "gemini", "ollama", "lmstudio"]
         for provider in providers:
             self.provider_combo.addItem(provider.capitalize(), provider)
@@ -1397,10 +1414,10 @@ class HelpDialog(QDialog):
 class WorkflowDialog(QDialog):
 
     MODULES = [
-        ("transcription", "Transcription Whisper"),
-        ("youtube", "Génération YouTube"),
-        ("thumbnail", "Génération miniature"),
-        ("vision", "Sélection IA des miniatures"),
+        ("transcription", "📝 Transcription Whisper - Générer le texte depuis la vidéo"),
+        ("youtube", "📺 Génération YouTube - Extraire la description depuis la vidéo"),
+        ("thumbnail", "🖼️ Génération miniature - Créer une miniature automatique"),
+        ("vision", "👁️ Sélection IA des miniatures - Choisir la meilleure miniature via IA"),
     ]
 
     def __init__(self, parent=None):
@@ -1659,12 +1676,59 @@ class SmartCutDialog(QDialog):
         except ValueError:
             QMessageBox.warning(self, "Découpage", "Valeurs numériques invalides.")
             return
-        threading.Thread(
-            target=SmartCutService(self.ui).generate,
-            args=(self.project, settings),
-            daemon=True,
-        ).start()
-        self.accept()
+
+        # Check if transcript.json exists before running SmartCutService
+        from pathlib import Path
+        transcript_path = Path(self.project.output_dir) / "transcript.json"
+
+        if not transcript_path.exists():
+            self.ui.log("⚠️ Avertissement: Aucun transcript.json trouvé.")
+            self.ui.log("⚠️ Une transcription est nécessaire avant de pouvoir utiliser le découpage intelligent.")
+            self.ui.log("🔄 Génération automatique du transcript...")
+
+            def finished_transcription(cancelled=False):
+                if cancelled:
+                    self.ui.log("Annulé par l'utilisateur.")
+                    self.ui._set_smart_cut_running(False)
+                    return
+                self.ui.log("✅ Transcription terminée avec succès!")
+                time.sleep(1)
+                self.ui.log("✂️ Exécution du découpage intelligent...")
+
+                threading.Thread(
+                    target=SmartCutService(self.ui).generate,
+                    args=(self.project, settings),
+                    daemon=True,
+                ).start()
+                self.ui._set_smart_cut_running(True)
+                self.accept()
+
+            self.ui._set_smart_cut_running(True)
+            TranscriptionWorker(
+                self.project.video_path,
+                self.ui,
+                forced_modules=["transcription"],
+                on_finished=finished_transcription,
+            ).start()
+        else:
+            def finished_smart_cut(cancelled=False):
+                if cancelled:
+                    self.ui.log("Découpage intelligent annulé par l'utilisateur.")
+                else:
+                    self.ui.log("✂️ Découpage intelligent terminé avec succès!")
+                self.ui._set_smart_cut_running(False)
+
+            try:
+                threading.Thread(
+                    target=SmartCutService(self.ui).generate,
+                    args=(self.project, settings),
+                    daemon=True,
+                ).start()
+                self.ui._set_smart_cut_running(True)
+            except Exception as e:
+                self.ui._set_smart_cut_running(False)
+                QMessageBox.critical(self, "Erreur", f"Erreur lors du démarrage du découpage:\n{str(e)}")
+            self.accept()
 
 
 class ToolsDialog(QDialog):
