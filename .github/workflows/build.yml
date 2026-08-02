@@ -45,8 +45,26 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
 
-      - name: Install dependencies
+      - name: Resolve Python version
+        id: pyver
+        shell: bash
+        run: |
+          PY=$(python --version 2>&1 | sed -E 's/Python ([0-9.]+).*/\1/')
+          echo "version=$PY" >> "$GITHUB_OUTPUT"
+
+      - name: Cache virtual environment
+        id: venv-cache
+        continue-on-error: true
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.pyver.outputs.version }}-${{ hashFiles('requirements.txt') }}
+
+      - name: Create venv & Install dependencies
+        if: steps.venv-cache.outputs.cache-hit != 'true'
         run: |
           python -m venv .venv
           .\.venv\Scripts\activate
