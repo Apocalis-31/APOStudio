@@ -18,10 +18,11 @@ for sub in ['cublas', 'cudnn', 'cuda_runtime', 'cuda_nvrtc']:
                 cuda_binaries.append((src, os.path.join('nvidia', sub, 'bin')))
 
 a = Analysis(
-    ['src\\main.py'],
-    pathex=[],
+    ['main.py'],
+    pathex=['src'],
     binaries=cuda_binaries,
     datas=[
+    ("style.qss", "."),
     ("assets", "assets"),
     ("docs", "docs"),
     ("ffmpeg", "ffmpeg"),

@@ -1,6 +1,5 @@
 anthropic==0.116.0
 av==18.0.0
-customtkinter==6.0.0
 faster-whisper==1.2.1
 openai==2.45.0
 opencv-python==4.12.0.88

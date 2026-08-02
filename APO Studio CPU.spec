@@ -5,10 +5,11 @@ from PyInstaller.utils.hooks import collect_submodules
 hiddenimports = collect_submodules("faster_whisper")
 
 a = Analysis(
-    ['src\\main.py'],
-    pathex=[],
+    ['main.py'],
+    pathex=['src'],
     binaries=[],
     datas=[
+    ("style.qss", "."),
     ("assets", "assets"),
     ("docs", "docs"),
     ("ffmpeg", "ffmpeg"),

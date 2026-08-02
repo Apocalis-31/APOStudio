@@ -5,7 +5,12 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, "frozen", False):
+    _exe_dir = os.path.dirname(os.path.abspath(sys.executable))
+    _internal = os.path.join(_exe_dir, "_internal")
+    BASE_DIR = _internal if os.path.isdir(_internal) else _exe_dir
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.join(BASE_DIR, "src")
 
 if SRC_DIR not in sys.path:
