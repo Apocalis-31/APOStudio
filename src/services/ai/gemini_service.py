@@ -1,7 +1,7 @@
-import json
 import base64
 import requests
 from services.config_service import ConfigService
+from services.ai.json_utils import parse_json_response
 
 
 GEMINI_MODELS = [
@@ -89,15 +89,10 @@ class GeminiService:
             system_instruction=system_prompt
         )
 
-        cleaned = result.strip()
-
-        if cleaned.startswith("```"):
-            cleaned = cleaned.split("\n", 1)[1]
-            if cleaned.endswith("```"):
-                cleaned = cleaned[:-3]
-            cleaned = cleaned.strip()
-
-        return json.loads(cleaned)
+        return parse_json_response(
+            result,
+            context="réponse Gemini"
+        )
 
     def ask_vision(
         self,
@@ -135,12 +130,7 @@ class GeminiService:
             system_instruction=system_prompt
         )
 
-        cleaned = result.strip()
-
-        if cleaned.startswith("```"):
-            cleaned = cleaned.split("\n", 1)[1]
-            if cleaned.endswith("```"):
-                cleaned = cleaned[:-3]
-            cleaned = cleaned.strip()
-
-        return json.loads(cleaned)
+        return parse_json_response(
+            result,
+            context="réponse Gemini vision"
+        )

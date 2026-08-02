@@ -5,6 +5,7 @@ faster-whisper==1.2.1
 openai==2.45.0
 opencv-python==4.12.0.88
 Pillow==12.2.0
+PySide6==6.11.1
 python-dotenv==1.2.2
 requests==2.32.5
 nvidia-cublas-cu12==12.6.4.1

@@ -1,7 +1,7 @@
-import json
 import base64
 from openai import OpenAI
 from services.config_service import ConfigService
+from services.ai.json_utils import parse_json_response
 from schemas.youtube_schema import YOUTUBE_SCHEMA
 
 
@@ -64,7 +64,10 @@ class NvidiaService:
             response_format={"type": "json_object"}
         )
 
-        return json.loads(response.choices[0].message.content)
+        return parse_json_response(
+            response.choices[0].message.content,
+            context="réponse NVIDIA"
+        )
 
     def ask_vision(
         self,
@@ -107,4 +110,7 @@ class NvidiaService:
             response_format={"type": "json_object"}
         )
 
-        return json.loads(response.choices[0].message.content)
+        return parse_json_response(
+            response.choices[0].message.content,
+            context="réponse NVIDIA vision"
+        )

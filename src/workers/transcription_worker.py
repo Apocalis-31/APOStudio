@@ -78,12 +78,12 @@ class TranscriptionWorker:
             self.ui.log(_translate_error(str(e)))
             self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
+            self.ui.error(_translate_error(str(e)))
+
             traceback.print_exc()
 
         finally:
 
-            if success and self.on_finished:
-                    
-                self.ui.log("DEBUG : on_finished()")
+            if self.on_finished:
 
-                self.on_finished(cancelled=False)
+                self.on_finished(cancelled=not success)
