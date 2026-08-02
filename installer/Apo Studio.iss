@@ -12,7 +12,8 @@ WizardImageFile=..\assets\branding\wizard.bmp
 WizardSmallImageFile=..\assets\branding\wizard_small.bmp
 LicenseFile=license.txt
 InfoAfterFile=changelog.txt
-VersionInfoVersion={#MyAppVersion}.0VersionInfoCompany=APO Studio
+VersionInfoVersion={#MyAppVersion}.0
+VersionInfoCompany=APO Studio
 VersionInfoDescription=Assistant de création YouTube
 VersionInfoProductName=APO Studio
 VersionInfoCopyright=© 2026 APO Studio
