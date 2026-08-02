@@ -52,6 +52,7 @@ try:
     from services.smart_cut.video_resolver import VideoResolver
     from services.workflow.workflow_config import WorkflowConfig
     from workers.transcription_worker import TranscriptionWorker
+    from assisted_editing.ui.assisted_editing_dialog import AssistedEditingDialog
 
     PIPELINE_OK = True
     PIPELINE_ERROR = None
@@ -1682,6 +1683,10 @@ class ToolsDialog(QDialog):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(14)
 
+        # ==================================================
+        # Titre
+        # ==================================================
+
         title = QLabel("🧰 Outils")
         title.setObjectName("DialogTitle")
         layout.addWidget(title)
@@ -1690,10 +1695,16 @@ class ToolsDialog(QDialog):
         subtitle.setObjectName("DialogSection")
         layout.addWidget(subtitle)
 
+        # ==================================================
+        # Découpage de VOD
+        # ==================================================
+
         card, card_layout = _card()
+
         card_title = QLabel("✂️ Découpage de VOD")
         card_title.setObjectName("CardTitle")
         card_layout.addWidget(card_title)
+
         desc = QLabel(
             "Découpe intelligemment une VOD complète\n"
             "en plusieurs épisodes prêts à être montés."
@@ -1701,12 +1712,55 @@ class ToolsDialog(QDialog):
         desc.setObjectName("HelpText")
         desc.setWordWrap(True)
         card_layout.addWidget(desc)
+
         self.launch_button = QPushButton("Lancer")
         self.launch_button.setObjectName("PrimaryButton")
         self.launch_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.launch_button.clicked.connect(self._launch_smart_cut)
-        card_layout.addWidget(self.launch_button, 0, Qt.AlignmentFlag.AlignRight)
+
+        card_layout.addWidget(
+            self.launch_button,
+            0,
+            Qt.AlignmentFlag.AlignRight,
+        )
+
         layout.addWidget(card)
+
+        # ==================================================
+        # Montage Assisté
+        # ==================================================
+
+        card2, card2_layout = _card()
+
+        card2_title = QLabel("🎬 Montage Assisté")
+        card2_title.setObjectName("CardTitle")
+        card2_layout.addWidget(card2_title)
+
+        desc2 = QLabel(
+            "Assemble automatiquement une VOD\n"
+            "avec introduction, overlays\n"
+            "et autres ressources."
+        )
+        desc2.setObjectName("HelpText")
+        desc2.setWordWrap(True)
+        card2_layout.addWidget(desc2)
+
+        self.assisted_button = QPushButton("Lancer")
+        self.assisted_button.setObjectName("PrimaryButton")
+        self.assisted_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.assisted_button.clicked.connect(
+            self._launch_assisted_editing
+        )
+
+        card2_layout.addWidget(
+            self.assisted_button,
+            0,
+            Qt.AlignmentFlag.AlignRight,
+        )
+
+        layout.addWidget(card2)
+
+        # ==================================================
 
         self.status = QLabel("")
         self.status.setObjectName("DialogSection")
@@ -1716,19 +1770,29 @@ class ToolsDialog(QDialog):
         close_btn.setObjectName("DialogButton")
         close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         close_btn.clicked.connect(self.accept)
-        layout.addWidget(close_btn, 0, Qt.AlignmentFlag.AlignRight)
+
+        layout.addWidget(
+            close_btn,
+            0,
+            Qt.AlignmentFlag.AlignRight,
+        )
 
         self.prepared.connect(self._on_prepared)
 
+    # ==================================================
+
     def _launch_smart_cut(self):
+
         video, _ = QFileDialog.getOpenFileName(
             self,
             "Choisir une VOD",
             "",
             "Vidéo MP4 (*.mp4);;Tous les fichiers (*.*)",
         )
+
         if not video:
             return
+
         self.ui.log("")
         self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         self.ui.log("🎬 Découpage de VOD")
@@ -1748,6 +1812,7 @@ class ToolsDialog(QDialog):
             "utiliser le découpage intelligent.\n\n"
             "Voulez-vous préparer cette VOD ?",
         )
+
         if answer != QMessageBox.StandardButton.Yes:
             return
 
@@ -1755,9 +1820,11 @@ class ToolsDialog(QDialog):
         self.status.setText("⏳ Préparation de la VOD en cours...")
 
         def finished(cancelled=False):
+
             if cancelled:
                 self.prepared.emit(None)
                 return
+
             project = VideoResolver(self.ui).resolve(video)
             self.prepared.emit(project)
 
@@ -1768,17 +1835,32 @@ class ToolsDialog(QDialog):
             on_finished=finished,
         ).start()
 
+    # ==================================================
+
     def _on_prepared(self, project):
+
         self.launch_button.setEnabled(True)
         self.status.setText("")
+
         if project is None:
             QMessageBox.warning(
-                self, "Découpage", "Impossible de charger le projet."
+                self,
+                "Découpage",
+                "Impossible de charger le projet.",
             )
             return
-        SmartCutDialog(project, self.ui, self).exec()
 
+        SmartCutDialog(
+            project,
+            self.ui,
+            self,
+        ).exec()
 
+    # ==================================================
+
+    def _launch_assisted_editing(self):
+
+        AssistedEditingDialog(self).exec()
 # ============================================================
 # Démarrage
 # ============================================================
