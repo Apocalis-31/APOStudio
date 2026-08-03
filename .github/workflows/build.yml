@@ -120,11 +120,20 @@ jobs:
           name: dist-${{ matrix.variant }}
           path: dist/Apo Studio${{ matrix.variant == 'CPU' && ' CPU' || '' }}
 
-      - name: Compile Inno Setup (${{ matrix.variant }})
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.9
+      - name: Cache Chocolatey packages
+        uses: actions/cache@v4
         with:
-          path: ${{ matrix.iss }}
-          options: /O+
+          path: C:\ProgramData\chocolatey\lib
+          key: chocolatey-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+
+      - name: Install Inno Setup via Chocolatey
+        run: |
+          choco install innosetup --no-progress -y
+          echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+
+      - name: Compile Inno Setup (${{ matrix.variant }})
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "${{ matrix.iss }}" /O+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
