@@ -33,8 +33,6 @@ class VideoResolver:
         self.ui.log(f"📺 Série : {parsed['series']}")
         self.ui.log(f"🎞️ Épisode : {parsed['episode']}")
 
-        print("DEBUG : Projet trouvé")
-
         return self._find_project(parsed)
 
     # ==========================================
@@ -62,54 +60,7 @@ class VideoResolver:
 
         self.ui.log("✅ Projet trouvé")
 
-        project = ProjectStorage().load(project_folder)
-
-        # ==========================================
-        # Vérification du transcript
-        # ==========================================
-
-        transcript = self._find_transcript(project)
-
-        if transcript is None:
-
-            self.ui.log("📝 Aucun transcript trouvé")
-            return None
-
-        self.ui.log(f"✅ Transcript trouvé : {transcript.name}")
-        self.ui.log(f"📂 {transcript.parent}")
-
-        return project
+        return ProjectStorage().load(project_folder)
 
     # ==========================================
 
-    def _find_transcript(self, project):
-
-        candidates = []
-
-        if project.project_path is not None:
-            candidates.append(
-                project.project_path / "transcript.txt"
-            )
-
-        if project.working_path is not None:
-            candidates.append(
-                project.working_path / "transcript.txt"
-            )
-
-        for candidate in candidates:
-            if candidate.exists():
-                return candidate
-
-        # Repli : recherche dans les dossiers "Episode N"
-        if project.project_path is not None:
-
-            for folder in sorted(
-                project.project_path.glob("Episode *")
-            ):
-
-                candidate = folder / "transcript.txt"
-
-                if candidate.exists():
-                    return candidate
-
-        return None

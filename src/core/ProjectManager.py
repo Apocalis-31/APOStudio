@@ -7,17 +7,22 @@ from services.project_storage import ProjectStorage
 from services.ai.whisper_service import WhisperService
 from services.ai.youtube_service import YoutubeService
 from services.thumbnail.thumbnail_service import ThumbnailService
+from services.path_service import PathService
 
 from services.workflow.workflow_manager import WorkflowManager
 
 
 class ProjectManager:
 
+    # ==================================================
+
     def _check_cancel(self, cancel_event):
 
         if cancel_event and cancel_event.is_set():
             from workers.transcription_worker import Cancelled
             raise Cancelled()
+
+    # ==================================================
 
     def create_project(
         self,
@@ -38,52 +43,47 @@ class ProjectManager:
         ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         ui.log("")
 
-        name = video.stem
-
         parser = FilenameParser()
-
         parsed = parser.parse(video_path)
 
-
-
-        project = Project(
-            name=name,
-            series=parsed["series"],
-            next_episode=parsed.get("episode") or 1,
-            video_path=video,
-        )
-
         storage = ProjectStorage()
+
         workflow = WorkflowManager(
             forced_modules=forced_modules
         )
-        ui.log("📁 Création du projet...")
+
+        ui.log("📁 Chargement du projet...")
         ui.step("project")
 
+        if storage.exists(parsed["series"]):
 
-        ui.log("DEBUG : sauvegarde finale")
+            project = storage.load(
+                PathService.projects() / parsed["series"]
+            )
+
+            project.video_path = video
+
+        else:
+
+            project = Project(
+                name=video.stem,
+                series=parsed["series"],
+                next_episode=1,
+                video_path=video,
+            )
+
         storage.save(project)
-        ui.log("DEBUG : projet sauvegardé")
-
-        # ==========================================
+        # ==================================================
         # Dossier de travail
-        # ==========================================
+        # ==================================================
 
-        episode_folder = (
-            project.project_path
-            / f"Episode {project.next_episode}"
-        )
+        # Le Smart Cut travaille désormais directement
+        # dans le dossier de la série.
+        project.working_path = project.project_path
 
-        episode_folder.mkdir(
-            parents=True,
-            exist_ok=True
-        )
-
-        project.working_path = episode_folder
-
-        # ==========================================
+        # ==================================================
         # Transcription
-        # ==========================================
+        # ==================================================
 
         self._check_cancel(cancel_event)
 
@@ -92,24 +92,18 @@ class ProjectManager:
             ui.log("🎙️ Chargement de Whisper...")
             ui.step("whisper")
 
-            transcript = (
-                project.working_path
-                or project.project_path
-            ) / "transcript.txt"
+            whisper = WhisperService(
+                ui=ui,
+                cancel_event=cancel_event,
+            )
 
-            if transcript.exists():
+            whisper.transcribe(project)
 
-                ui.log("✅ Transcription déjà présente")
-                project.transcription_done = True
+            project.transcription_done = True
 
-            else:
-
-                whisper = WhisperService(ui=ui, cancel_event=cancel_event)
-                whisper.transcribe(project)
-
-        # ==========================================
+        # ==================================================
         # YouTube
-        # ==========================================
+        # ==================================================
 
         self._check_cancel(cancel_event)
 
@@ -117,12 +111,16 @@ class ProjectManager:
 
             ui.step("youtube")
 
-            youtube = YoutubeService(ui, cancel_event=cancel_event)
+            youtube = YoutubeService(
+                ui,
+                cancel_event=cancel_event,
+            )
+
             youtube.generate(project)
 
-        # ==========================================
-        # Thumbnail
-        # ==========================================
+        # ==================================================
+        # Miniature
+        # ==================================================
 
         self._check_cancel(cancel_event)
 
@@ -130,12 +128,16 @@ class ProjectManager:
 
             ui.step("thumbnail")
 
-            thumbnail = ThumbnailService(ui, cancel_event=cancel_event)
+            thumbnail = ThumbnailService(
+                ui,
+                cancel_event=cancel_event,
+            )
+
             thumbnail.generate(project)
 
-        # ==========================================
+        # ==================================================
         # Sauvegarde
-        # ==========================================
+        # ==================================================
 
         self._check_cancel(cancel_event)
 
@@ -143,8 +145,6 @@ class ProjectManager:
         ui.step("save")
 
         storage.save(project)
-
-
 
         ui.log("")
         ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")

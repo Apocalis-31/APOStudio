@@ -1,3 +1,4 @@
+from services.project_storage import ProjectStorage
 from services.smart_cut.transcript_loader import TranscriptLoader
 from services.smart_cut.gap_finder import GapFinder
 from services.smart_cut.cut_planner import CutPlanner
@@ -133,9 +134,17 @@ class SmartCutService:
             settings
         )
 
-        self.ui.log(
-            "🎬 Préparation du découpage..."
-        )
+        if plans:
+
+            project.next_episode = plans[-1].index + 1
+
+            ProjectStorage().save(project)
+
+            self.ui.log(
+                f"💾 Prochain épisode : {project.next_episode}"
+            )
+
+        self.ui.log("✅ Découpage terminé")
 
         self.ui.log(
             f"📑 {len(plans)} épisode(s) planifié(s)"
@@ -160,10 +169,6 @@ class SmartCutService:
             self.ui.log(
                 f"Durée : {plan.end - plan.start:.1f}s"
             )
-
-        if plans:
-
-            plan = plans[0]
 
         self.ui.progress(100, 100)
 

@@ -4,6 +4,8 @@ import threading
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
+import math
+
 
 if getattr(sys, "frozen", False):
     _exe_dir = os.path.dirname(os.path.abspath(sys.executable))
@@ -53,6 +55,7 @@ try:
     from services.workflow.workflow_config import WorkflowConfig
     from workers.transcription_worker import TranscriptionWorker
     from assisted_editing.ui.assisted_editing_dialog import AssistedEditingDialog
+    from services.smart_cut.transcript_loader import TranscriptLoader
 
     PIPELINE_OK = True
     PIPELINE_ERROR = None
@@ -1644,6 +1647,9 @@ class SmartCutDialog(QDialog):
         info = QLabel(
             f"Vidéo : {Path(project.video_path).name}\nSérie : {project.series}"
         )
+        
+        segments = TranscriptLoader().load(project)
+        self.total_duration = segments[-1].end
         info.setObjectName("HelpText")
         info.setWordWrap(True)
         layout.addWidget(info)
@@ -1655,6 +1661,11 @@ class SmartCutDialog(QDialog):
         for radio in (self.mode_duration, self.mode_count):
             radio.setCursor(Qt.CursorShape.PointingHandCursor)
             layout.addWidget(radio)
+
+        self.estimation = QLabel()
+        self.estimation.setObjectName("HelpText")
+        self.estimation.setWordWrap(True)
+        layout.addWidget(self.estimation)
 
         layout.addWidget(self._field_label("DURÉE CIBLE (MINUTES)"))
         self.target_duration = QLineEdit("60")
@@ -1671,6 +1682,8 @@ class SmartCutDialog(QDialog):
         layout.addWidget(self._field_label("NOMBRE DE VIDÉOS"))
         self.episode_count = QLineEdit("6")
         layout.addWidget(self.episode_count)
+
+
 
         layout.addWidget(self._field_label("NOM DE LA SÉRIE"))
         self.series_name = QLineEdit(project.series)
@@ -1689,6 +1702,13 @@ class SmartCutDialog(QDialog):
             box.setCursor(Qt.CursorShape.PointingHandCursor)
             layout.addWidget(box)
 
+        self.mode_duration.toggled.connect(self._update_estimation)
+        self.mode_count.toggled.connect(self._update_estimation)
+
+        self.target_duration.textChanged.connect(self._update_estimation)
+        self.episode_count.textChanged.connect(self._update_estimation)
+
+        self._update_estimation()
         buttons = QHBoxLayout()
         buttons.setSpacing(10)
         cancel_btn = QPushButton("Annuler")
@@ -1710,6 +1730,57 @@ class SmartCutDialog(QDialog):
         label = QLabel(text)
         label.setObjectName("DialogSection")
         return label
+
+    def _update_estimation(self):
+
+        try:
+
+            if self.mode_duration.isChecked():
+
+                target = max(
+                    1,
+                    int(self.target_duration.text() or 60)
+                )
+
+                episodes = math.ceil(
+                    self.total_duration /
+                    (target * 60)
+                )
+
+                total_h = int(self.total_duration // 3600)
+                total_m = int((self.total_duration % 3600) // 60)
+
+                self.estimation.setText(
+
+                    f"⏱ Durée totale : {total_h} h {total_m} min\n"
+                    f"📺 Environ {episodes} épisode(s) de {target} minutes"
+
+                )
+
+            else:
+
+                count = max(
+                    1,
+                    int(self.episode_count.text() or 1)
+                )
+
+                average = self.total_duration / count
+
+                minutes = int(average // 60)
+
+                total_h = int(self.total_duration // 3600)
+                total_m = int((self.total_duration % 3600) // 60)
+
+                self.estimation.setText(
+
+                    f"⏱ Durée totale : {total_h} h {total_m} min\n"
+                    f"📺 {count} épisode(s) d'environ {minutes} minutes"
+
+                )
+
+        except Exception:
+
+            self.estimation.setText("")
 
     def _start(self):
         try:
@@ -1885,26 +1956,9 @@ class ToolsDialog(QDialog):
         self.ui.log("🎬 Découpage de VOD")
         self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-        project = VideoResolver(self.ui).resolve(video)
-
-        if project is not None:
-            SmartCutDialog(project, self.ui, self).exec()
-            return
-
-        answer = QMessageBox.question(
-            self,
-            "Préparer la VOD",
-            "Cette VOD n'a jamais été préparée.\n\n"
-            "Une transcription est nécessaire avant de pouvoir "
-            "utiliser le découpage intelligent.\n\n"
-            "Voulez-vous préparer cette VOD ?",
-        )
-
-        if answer != QMessageBox.StandardButton.Yes:
-            return
-
         bridge = self.ui
         cancel_event = threading.Event()
+
         bridge.smart_cut_active = True
         bridge.smart_cut_cancel_event = cancel_event
         bridge.smart_cut_started_signal.emit()
@@ -1913,24 +1967,18 @@ class ToolsDialog(QDialog):
         self.status.setText("⏳ Préparation de la VOD en cours...")
 
         def finished(cancelled=False):
-<<<<<<< HEAD
 
-=======
             bridge.smart_cut_active = False
             bridge.smart_cut_cancel_event = None
             bridge.smart_cut_finished_signal.emit()
->>>>>>> df5ebb4c1da9b8dc2de426c46ae6eae10bf80b85
+
             if cancelled:
                 self.prepared.emit(None, True)
                 return
-<<<<<<< HEAD
 
-            project = VideoResolver(self.ui).resolve(video)
-            self.prepared.emit(project)
-=======
             project = VideoResolver(bridge).resolve(video)
+
             self.prepared.emit(project, False)
->>>>>>> df5ebb4c1da9b8dc2de426c46ae6eae10bf80b85
 
         TranscriptionWorker(
             video,
@@ -1940,29 +1988,25 @@ class ToolsDialog(QDialog):
             on_finished=finished,
         ).start()
 
-<<<<<<< HEAD
-    # ==================================================
 
-    def _on_prepared(self, project):
-
-        self.launch_button.setEnabled(True)
-        self.status.setText("")
-
-=======
     def _on_prepared(self, project, cancelled):
+
         self.launch_button.setEnabled(True)
         self.status.setText("")
+
         if cancelled:
             QMessageBox.information(
-                self, "Découpage", "Préparation annulée."
+                self,
+                "Découpage",
+                "Préparation annulée."
             )
             return
->>>>>>> df5ebb4c1da9b8dc2de426c46ae6eae10bf80b85
+
         if project is None:
             QMessageBox.warning(
                 self,
                 "Découpage",
-                "Impossible de charger le projet.",
+                "Impossible de charger le projet."
             )
             return
 

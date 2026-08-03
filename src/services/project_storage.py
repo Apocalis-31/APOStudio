@@ -66,3 +66,14 @@ class ProjectStorage:
             project.working_path = project_folder
 
         return project
+
+    def exists(self, series):
+
+        project_folder = PathService.projects() / series
+
+        project_file = (
+            project_folder
+            / f"{series}_apo_project.json"
+        )
+
+        return project_file.exists()

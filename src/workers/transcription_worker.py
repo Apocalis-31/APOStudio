@@ -49,18 +49,16 @@ class TranscriptionWorker:
     # ==========================================
 
     def run(self):
-
         success = False
 
         try:
-
+            print("DEBUG 2 : avant create_project")
             self.manager.create_project(
                 self.video_path,
                 ui=self.ui,
                 cancel_event=self.cancel_event,
                 forced_modules=self.forced_modules
             )
-
             success = True
 
         except Cancelled:
@@ -85,5 +83,7 @@ class TranscriptionWorker:
         finally:
 
             if self.on_finished:
-
+                print("DEBUG 6 : on_finished")
                 self.on_finished(cancelled=not success)
+
+            print("DEBUG 7 : fin")
