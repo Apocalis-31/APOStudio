@@ -157,6 +157,8 @@ class UiBridge(QObject):
     update_progress_signal = Signal(int)
     update_progress_text_signal = Signal(str)
     update_done_signal = Signal(object)
+    smart_cut_started_signal = Signal()
+    smart_cut_finished_signal = Signal()
 
     def __init__(self):
         super().__init__()
@@ -170,6 +172,10 @@ class UiBridge(QObject):
         self.session_finished = self.session_finished_signal.emit
         self.video_added = self.video_added_signal.emit
         self.video_finished = self.video_finished_signal.emit
+
+        # État du découpage intelligent (VOD)
+        self.smart_cut_active = False
+        self.smart_cut_cancel_event = None
 
     def queue_update(self, **kwargs):
         self.queue_update_signal.emit(kwargs)
@@ -284,9 +290,10 @@ class ActionButton(QFrame):
 
     clicked = Signal()
 
-    def __init__(self, svg_body, title, subtitle="", size=32):
+    def __init__(self, svg_body, title, subtitle="", size=32, accent=False):
         super().__init__()
         self.setObjectName("ActionButton")
+        self.setProperty("accent", accent)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         if subtitle:
             self.setToolTip(f"{title}\n{subtitle}")
@@ -298,7 +305,7 @@ class ActionButton(QFrame):
         layout.setSpacing(4)
 
         self._icon = QLabel()
-        icon_size = size - 6
+        icon_size = max(16, size - 6)
         self._icon.setPixmap(_svg_pixmap(svg_body, "#e8e8e8", icon_size))
         self._icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self._icon)
@@ -419,7 +426,7 @@ class MainWindow(QMainWindow):
         self._waiting_count = 0
         self._update_info = None
         self._update_running = False
-        self._smart_cut_running = False
+        self._smart_cut_active = False
 
         self.console_window = ConsoleWindow()
 
@@ -561,10 +568,10 @@ class MainWindow(QMainWindow):
         actions = QGridLayout()
         actions.setSpacing(10)
         self.new_project_button = ActionButton(
-            SVG_FOLDER_PLUS, "Nouveau Projet", "Vidéo à analyser", size=32
+            SVG_FOLDER_PLUS, "Nouveau Projet", "Vidéo à analyser", accent=True
         )
         self.batch_button = ActionButton(
-            SVG_COPY, "Traitement par Lot", "Plusieurs vidéos", size=32
+            SVG_COPY, "Traitement par Lot", "Plusieurs vidéos", accent=True
         )
         actions.addWidget(self.new_project_button, 0, 0)
         actions.addWidget(self.batch_button, 0, 1)
@@ -813,6 +820,8 @@ class MainWindow(QMainWindow):
         bridge.update_progress_signal.connect(self._on_update_progress)
         bridge.update_progress_text_signal.connect(self._on_update_progress_text)
         bridge.update_done_signal.connect(self._on_update_done)
+        bridge.smart_cut_started_signal.connect(self._on_smart_cut_started)
+        bridge.smart_cut_finished_signal.connect(self._on_smart_cut_finished)
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._on_timer)
@@ -846,6 +855,14 @@ class MainWindow(QMainWindow):
             self.queue_manager.add(path)
 
     def _toggle_run(self):
+        if getattr(self.bridge, "smart_cut_active", False):
+            cancel_event = getattr(
+                self.bridge, "smart_cut_cancel_event", None
+            )
+            if cancel_event is not None:
+                cancel_event.set()
+            self._log("🛑 Arrêt du découpage demandé...")
+            return
         if self.queue_manager is None:
             return
         if self.queue_manager.running:
@@ -907,8 +924,11 @@ class MainWindow(QMainWindow):
             self.console_window.log_box.verticalScrollBar().maximum()
         )
 
-    def _on_progress(self, _value, _total):
-        pass
+    def _on_progress(self, value, total):
+        if self._smart_cut_active and total and total > 0:
+            self.ring.set_progress(
+                min(100.0, float(value) * 100.0 / float(total))
+            )
 
     def _on_step(self, key):
         if key not in STEPS:
@@ -921,6 +941,8 @@ class MainWindow(QMainWindow):
             if other != key and self._step_state[other] == "pending":
                 self._step_state[other] = "done"
         self._render_tasks()
+        if self._smart_cut_active and key in STEP_FRACTIONS:
+            self.ring.set_progress(min(70.0, STEP_FRACTIONS[key] * 70.0))
         self._update_ring_progress()
 
     def _on_current_video(self, name):
@@ -949,7 +971,8 @@ class MainWindow(QMainWindow):
 
     def _on_session_finished(self):
         self._session_start = None
-        self._set_running(False)
+        if not self._smart_cut_active:
+            self._set_running(False)
         self._reset_session_display()
         self._log("🏁 Session terminée")
 
@@ -1085,9 +1108,18 @@ class MainWindow(QMainWindow):
         self.stop_button.style().unpolish(self.stop_button)
         self.stop_button.style().polish(self.stop_button)
 
-    def _set_smart_cut_running(self, running):
-        self._smart_cut_running = running
-        self._set_running(running)
+    def _on_smart_cut_started(self):
+        self._smart_cut_active = True
+        self._set_running(True)
+        self._log("✂️ Découpage intelligent démarré")
+
+    def _on_smart_cut_finished(self):
+        self._smart_cut_active = False
+        if self.queue_manager is None or not self.queue_manager.running:
+            self._set_running(False)
+        if self._session_start is None:
+            self.ring.set_progress(0)
+            self.ring.set_time("--:--", "--:--")
 
     def _refresh_model_card(self):
         if self.config is None:
@@ -1145,6 +1177,8 @@ class MainWindow(QMainWindow):
         return best
 
     def _update_ring_progress(self):
+        if self._smart_cut_active:
+            return
         total = self.statistics.total_videos
         if total == 0:
             self.ring.set_progress(0)
@@ -1222,6 +1256,16 @@ class SettingsDialog(QDialog):
 
     saved = Signal()
 
+    MODEL_SUGGESTIONS = {
+        "openai": ["gpt-5.5"],
+        "claude": ["claude-sonnet-4"],
+        "glm": ["glm-4.7-flash", "glm-4.6v-flash"],
+        "nvidia": ["deepseek-ai/deepseek-v4-flash"],
+        "gemini": ["gemini-2.5-flash"],
+        "ollama": ["llama3.2"],
+        "lmstudio": [],
+    }
+
     def __init__(self, config, parent=None):
         super().__init__(parent)
         self.setObjectName("Dialog")
@@ -1241,20 +1285,6 @@ class SettingsDialog(QDialog):
 
         self.provider_combo = QComboBox()
         self.provider_combo.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.provider_combo.setStyleSheet("""
-            QComboBox {
-                padding-right: 30px;
-            }
-            QComboBox::drop-down {
-                border: 1px solid #3a3a3a;
-                border-radius: 4px;
-                width: 24px;
-            }
-            QComboBox::down-arrow {
-                width: 12px;
-                height: 12px;
-            }
-        """)
         providers = ["openai", "claude", "glm", "nvidia", "gemini", "ollama", "lmstudio"]
         for provider in providers:
             self.provider_combo.addItem(provider.capitalize(), provider)
@@ -1266,7 +1296,9 @@ class SettingsDialog(QDialog):
         layout.addWidget(self.api_key_input)
 
         layout.addWidget(self._section("MODÈLE"))
-        self.model_input = QLineEdit()
+        self.model_input = QComboBox()
+        self.model_input.setEditable(True)
+        self.model_input.setCursor(Qt.CursorShape.PointingHandCursor)
         self.model_input.setPlaceholderText("Ex. : glm-4.7-flash")
         layout.addWidget(self.model_input)
 
@@ -1300,6 +1332,11 @@ class SettingsDialog(QDialog):
         label.setObjectName("DialogSection")
         return label
 
+    def _fill_model_suggestions(self, provider):
+        self.model_input.clear()
+        for model in self.MODEL_SUGGESTIONS.get(provider, []):
+            self.model_input.addItem(model)
+
     def _load_current(self):
         if self.config is None:
             return
@@ -1310,7 +1347,8 @@ class SettingsDialog(QDialog):
                 self.provider_combo.setCurrentIndex(index)
             provider_cfg = self.config.get(provider, {}) or {}
             self.api_key_input.setText(provider_cfg.get("api_key", ""))
-            self.model_input.setText(provider_cfg.get("model", ""))
+            self._fill_model_suggestions(provider)
+            self.model_input.setCurrentText(provider_cfg.get("model", ""))
             self.url_input.setText(provider_cfg.get("base_url", ""))
         except Exception:
             pass
@@ -1321,7 +1359,8 @@ class SettingsDialog(QDialog):
         provider = self.provider_combo.currentData()
         provider_cfg = self.config.get(provider, {}) or {}
         self.api_key_input.setText(provider_cfg.get("api_key", ""))
-        self.model_input.setText(provider_cfg.get("model", ""))
+        self._fill_model_suggestions(provider)
+        self.model_input.setCurrentText(provider_cfg.get("model", ""))
         self.url_input.setText(provider_cfg.get("base_url", ""))
 
     def _save(self):
@@ -1331,7 +1370,7 @@ class SettingsDialog(QDialog):
         provider = self.provider_combo.currentData()
         self.config.set("ai.provider", provider)
         self.config.set(f"{provider}.api_key", self.api_key_input.text().strip())
-        self.config.set(f"{provider}.model", self.model_input.text().strip())
+        self.config.set(f"{provider}.model", self.model_input.currentText().strip())
         base_url = self.url_input.text().strip()
         if base_url:
             self.config.set(f"{provider}.base_url", base_url)
@@ -1414,17 +1453,21 @@ class HelpDialog(QDialog):
 class WorkflowDialog(QDialog):
 
     MODULES = [
-        ("transcription", "📝 Transcription Whisper - Générer le texte depuis la vidéo"),
-        ("youtube", "📺 Génération YouTube - Extraire la description depuis la vidéo"),
-        ("thumbnail", "🖼️ Génération miniature - Créer une miniature automatique"),
-        ("vision", "👁️ Sélection IA des miniatures - Choisir la meilleure miniature via IA"),
+        ("transcription", "Transcription Whisper",
+         "Génère le texte de la vidéo, indispensable pour la suite du workflow."),
+        ("youtube", "Génération YouTube",
+         "Rédige automatiquement la description, les titres et les tags."),
+        ("thumbnail", "Génération miniature",
+         "Crée une miniature automatique à partir d'une image extraite."),
+        ("vision", "Sélection IA des miniatures",
+         "L'IA choisit la meilleure miniature parmi plusieurs extraits."),
     ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("Dialog")
         self.setWindowTitle("Workflow")
-        self.setMinimumWidth(440)
+        self.setMinimumWidth(480)
         self.workflow_config = WorkflowConfig()
         workflow = self.workflow_config.load()
 
@@ -1436,17 +1479,24 @@ class WorkflowDialog(QDialog):
         title.setObjectName("DialogTitle")
         layout.addWidget(title)
 
-        desc = QLabel("Modules exécutés pour chaque vidéo.")
+        desc = QLabel("Modules exécutés pour chaque vidéo, dans l'ordre.")
         desc.setObjectName("DialogSection")
         layout.addWidget(desc)
 
         self.checkboxes = {}
-        for key, label in self.MODULES:
+        for key, label, hint in self.MODULES:
             box = QCheckBox(label)
             box.setChecked(key in workflow.enabled)
             box.setCursor(Qt.CursorShape.PointingHandCursor)
+            box.setToolTip(hint)
             self.checkboxes[key] = box
             layout.addWidget(box)
+            if hint:
+                hint_label = QLabel(hint)
+                hint_label.setObjectName("WorkflowHint")
+                hint_label.setWordWrap(True)
+                hint_label.setIndent(24)
+                layout.addWidget(hint_label)
 
         buttons = QHBoxLayout()
         buttons.setSpacing(10)
@@ -1677,63 +1727,36 @@ class SmartCutDialog(QDialog):
             QMessageBox.warning(self, "Découpage", "Valeurs numériques invalides.")
             return
 
-        # Check if transcript.json exists before running SmartCutService
-        from pathlib import Path
-        transcript_path = Path(self.project.output_dir) / "transcript.json"
+        from workers.transcription_worker import Cancelled
 
-        if not transcript_path.exists():
-            self.ui.log("⚠️ Avertissement: Aucun transcript.json trouvé.")
-            self.ui.log("⚠️ Une transcription est nécessaire avant de pouvoir utiliser le découpage intelligent.")
-            self.ui.log("🔄 Génération automatique du transcript...")
+        bridge = self.ui
+        cancel_event = threading.Event()
+        bridge.smart_cut_cancel_event = cancel_event
 
-            def finished_transcription(cancelled=False):
-                if cancelled:
-                    self.ui.log("Annulé par l'utilisateur.")
-                    self.ui._set_smart_cut_running(False)
-                    return
-                self.ui.log("✅ Transcription terminée avec succès!")
-                time.sleep(1)
-                self.ui.log("✂️ Exécution du découpage intelligent...")
-
-                threading.Thread(
-                    target=SmartCutService(self.ui).generate,
-                    args=(self.project, settings),
-                    daemon=True,
-                ).start()
-                self.ui._set_smart_cut_running(True)
-                self.accept()
-
-            self.ui._set_smart_cut_running(True)
-            TranscriptionWorker(
-                self.project.video_path,
-                self.ui,
-                forced_modules=["transcription"],
-                on_finished=finished_transcription,
-            ).start()
-        else:
-            def finished_smart_cut(cancelled=False):
-                if cancelled:
-                    self.ui.log("Découpage intelligent annulé par l'utilisateur.")
-                else:
-                    self.ui.log("✂️ Découpage intelligent terminé avec succès!")
-                self.ui._set_smart_cut_running(False)
-
+        def run_cut():
+            bridge.smart_cut_active = True
+            bridge.smart_cut_started_signal.emit()
             try:
-                threading.Thread(
-                    target=SmartCutService(self.ui).generate,
-                    args=(self.project, settings),
-                    daemon=True,
-                ).start()
-                self.ui._set_smart_cut_running(True)
-            except Exception as e:
-                self.ui._set_smart_cut_running(False)
-                QMessageBox.critical(self, "Erreur", f"Erreur lors du démarrage du découpage:\n{str(e)}")
-            self.accept()
+                SmartCutService(
+                    bridge,
+                    cancel_event=cancel_event,
+                ).generate(self.project, settings)
+            except Cancelled:
+                bridge.log("🛑 Découpage annulé.")
+            except Exception as exc:
+                bridge.log(f"❌ Erreur lors du découpage : {exc}")
+            finally:
+                bridge.smart_cut_active = False
+                bridge.smart_cut_cancel_event = None
+                bridge.smart_cut_finished_signal.emit()
+
+        threading.Thread(target=run_cut, daemon=True).start()
+        self.accept()
 
 
 class ToolsDialog(QDialog):
 
-    prepared = Signal(object)
+    prepared = Signal(object, bool)
 
     def __init__(self, parent=None, ui=None):
         super().__init__(parent)
@@ -1815,26 +1838,41 @@ class ToolsDialog(QDialog):
         if answer != QMessageBox.StandardButton.Yes:
             return
 
+        bridge = self.ui
+        cancel_event = threading.Event()
+        bridge.smart_cut_active = True
+        bridge.smart_cut_cancel_event = cancel_event
+        bridge.smart_cut_started_signal.emit()
+
         self.launch_button.setEnabled(False)
         self.status.setText("⏳ Préparation de la VOD en cours...")
 
         def finished(cancelled=False):
+            bridge.smart_cut_active = False
+            bridge.smart_cut_cancel_event = None
+            bridge.smart_cut_finished_signal.emit()
             if cancelled:
-                self.prepared.emit(None)
+                self.prepared.emit(None, True)
                 return
-            project = VideoResolver(self.ui).resolve(video)
-            self.prepared.emit(project)
+            project = VideoResolver(bridge).resolve(video)
+            self.prepared.emit(project, False)
 
         TranscriptionWorker(
             video,
-            self.ui,
+            bridge,
             forced_modules=["transcription"],
+            cancel_event=cancel_event,
             on_finished=finished,
         ).start()
 
-    def _on_prepared(self, project):
+    def _on_prepared(self, project, cancelled):
         self.launch_button.setEnabled(True)
         self.status.setText("")
+        if cancelled:
+            QMessageBox.information(
+                self, "Découpage", "Préparation annulée."
+            )
+            return
         if project is None:
             QMessageBox.warning(
                 self, "Découpage", "Impossible de charger le projet."
@@ -1862,7 +1900,10 @@ def main():
 
     style_path = Path(BASE_DIR) / "style.qss"
     if style_path.exists():
-        app.setStyleSheet(style_path.read_text(encoding="utf-8"))
+        qss = style_path.read_text(encoding="utf-8")
+        assets_dir = (Path(BASE_DIR) / "assets").resolve().as_posix()
+        qss = qss.replace("@ASSETS@", assets_dir)
+        app.setStyleSheet(qss)
 
     icon_path = Path(BASE_DIR) / "assets" / "branding" / "logo_transparence_AS.ico"
     if icon_path.exists():

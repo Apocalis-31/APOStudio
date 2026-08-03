@@ -111,7 +111,15 @@ class GLMService:
                 f"❌ {type(error).__name__} après {elapsed:.2f}s"
             )
 
-            self.debug(_translate_error(str(error)))
+            original = str(error)
+
+            self.debug(f"🇨🇳 {original}")
+
+            translated = _translate_error(original)
+
+            if translated != original:
+
+                self.debug(f"🇫🇷 {translated}")
 
 
         def _execute_request(

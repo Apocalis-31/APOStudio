@@ -8,9 +8,18 @@ from services.smart_cut.ffmpeg_runner import FFmpegRunner
 
 class SmartCutService:
 
-    def __init__(self, ui):
+    def __init__(self, ui, cancel_event=None):
 
         self.ui = ui
+        self.cancel_event = cancel_event
+
+    # ==================================================
+
+    def _check_cancel(self):
+
+        if self.cancel_event and self.cancel_event.is_set():
+            from workers.transcription_worker import Cancelled
+            raise Cancelled()
 
     # ==================================================
 
@@ -59,6 +68,8 @@ class SmartCutService:
             f"IA : {'Activée' if settings.use_ai else 'Désactivée'}"
         )
 
+        self._check_cancel()
+
         # ==========================================
         # Chargement du transcript
         # ==========================================
@@ -68,6 +79,8 @@ class SmartCutService:
         self.ui.log(
             f"📄 {len(segments)} segments chargés"
         )
+
+        self._check_cancel()
 
         # ==========================================
         # Recherche des gaps
@@ -80,6 +93,8 @@ class SmartCutService:
         self.ui.log(
             f"🔍 {len(candidates)} gaps détectés"
         )
+
+        self._check_cancel()
 
         # ==========================================
         # Planification
@@ -101,12 +116,17 @@ class SmartCutService:
             "📄 Rapport généré"
         )
 
+        self._check_cancel()
+
         # ==========================================
         # EXECUTION DECOUPAGE
         # ==========================================
 
+        self.ui.progress(75, 100)
+
         FFmpegRunner(
-            self.ui
+            self.ui,
+            cancel_event=self.cancel_event
         ).run(
             project,
             plans,
@@ -145,5 +165,6 @@ class SmartCutService:
 
             plan = plans[0]
 
+        self.ui.progress(100, 100)
 
         return plans

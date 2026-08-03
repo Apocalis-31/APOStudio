@@ -12,10 +12,15 @@ class TranscriptLoader:
         project
     ) -> list[TranscriptSegment]:
 
-        transcript = (
-            project.project_path
-            / "transcript.json"
-        )
+        transcript = self._find_transcript(project)
+
+        if transcript is None:
+
+            raise FileNotFoundError(
+                "Aucun transcript.json trouvé pour ce projet.\n\n"
+                "Une transcription est nécessaire avant de pouvoir "
+                "utiliser le découpage intelligent."
+            )
 
         with open(
             transcript,
@@ -44,3 +49,37 @@ class TranscriptLoader:
             )
 
         return segments
+
+    # ==========================================
+
+    def _find_transcript(self, project):
+
+        candidates = []
+
+        if project.project_path is not None:
+            candidates.append(
+                project.project_path / "transcript.json"
+            )
+
+        if project.working_path is not None:
+            candidates.append(
+                project.working_path / "transcript.json"
+            )
+
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate
+
+        # Repli : recherche dans les dossiers "Episode N"
+        if project.project_path is not None:
+
+            for folder in sorted(
+                project.project_path.glob("Episode *")
+            ):
+
+                candidate = folder / "transcript.json"
+
+                if candidate.exists():
+                    return candidate
+
+        return None

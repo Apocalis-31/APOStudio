@@ -91,6 +91,23 @@ QFrame#ActionButton:hover {
     border: 1px solid #8e1f45;
 }
 
+QFrame#ActionButton[accent="true"] {
+    background-color: #8e1f45;
+    border: 1px solid #a82752;
+}
+
+QFrame#ActionButton[accent="true"]:hover {
+    background-color: #a82752;
+}
+
+QFrame#ActionButton[accent="true"] QLabel#ActionTitle {
+    color: #ffffff;
+}
+
+QFrame#ActionButton[accent="true"] QLabel#ActionSub {
+    color: #f2c4d1;
+}
+
 QLabel#ActionTitle {
     font-size: 13px;
     font-weight: bold;
@@ -100,6 +117,11 @@ QLabel#ActionTitle {
 QLabel#ActionSub {
     font-size: 11px;
     color: #7c8494;
+}
+
+QLabel#WorkflowHint {
+    font-size: 11px;
+    color: #9aa2b4;
 }
 
 QPushButton#StopButton {
@@ -360,6 +382,7 @@ QLineEdit, QComboBox {
     border: 1px solid #333333;
     border-radius: 6px;
     padding: 7px 10px;
+    padding-right: 28px;
     selection-background-color: #8e1f45;
 }
 
@@ -370,6 +393,12 @@ QLineEdit:focus, QComboBox:focus {
 QComboBox::drop-down {
     border: none;
     width: 24px;
+}
+
+QComboBox::down-arrow {
+    image: url(@ASSETS@/icons/chevron-down.svg);
+    width: 14px;
+    height: 14px;
 }
 
 QComboBox QAbstractItemView {

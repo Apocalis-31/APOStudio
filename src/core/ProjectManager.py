@@ -92,7 +92,10 @@ class ProjectManager:
             ui.log("🎙️ Chargement de Whisper...")
             ui.step("whisper")
 
-            transcript = project.project_path / "transcript.txt"
+            transcript = (
+                project.working_path
+                or project.project_path
+            ) / "transcript.txt"
 
             if transcript.exists():
 

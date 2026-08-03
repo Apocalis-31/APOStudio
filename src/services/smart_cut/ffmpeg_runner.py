@@ -6,9 +6,18 @@ from services.path_service import PathService
 
 class FFmpegRunner:
 
-    def __init__(self, ui):
+    def __init__(self, ui, cancel_event=None):
 
         self.ui = ui
+        self.cancel_event = cancel_event
+
+    # ==========================================
+
+    def _check_cancel(self):
+
+        if self.cancel_event and self.cancel_event.is_set():
+            from workers.transcription_worker import Cancelled
+            raise Cancelled()
 
     # ==========================================
 
@@ -24,13 +33,21 @@ class FFmpegRunner:
 
         self.ui.log("✂️ Début du découpage des épisodes...")
 
-        for plan in plans:
+        total = len(plans)
+
+        for index, plan in enumerate(plans):
+
+            self._check_cancel()
 
             self._cut_episode(
                 project,
                 plan,
                 settings
             )
+
+            progress = 75 + int(25 * (index + 1) / total)
+
+            self.ui.progress(progress, 100)
 
         self.ui.log("✅ Découpage terminé.")
 
@@ -105,6 +122,8 @@ class FFmpegRunner:
         self.ui.log(
             "⚡ Mode : Découpe instantanée"
         )
+
+        self._check_cancel()
 
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
