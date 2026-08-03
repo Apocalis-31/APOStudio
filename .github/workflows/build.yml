@@ -55,6 +55,12 @@ jobs:
           PY=$(python --version 2>&1 | sed -E 's/Python ([0-9.]+).*/\1/')
           echo "version=$PY" >> "$GITHUB_OUTPUT"
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: pip-${{ runner.os }}-${{ steps.pyver.outputs.version }}-${{ hashFiles('requirements.txt') }}
+
       - name: Cache virtual environment
         id: venv-cache
         continue-on-error: true
