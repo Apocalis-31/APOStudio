@@ -5,6 +5,7 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 import math
+import traceback
 
 
 if getattr(sys, "frozen", False):
@@ -62,6 +63,7 @@ try:
 except Exception as _exc:  # pragma: no cover
     PIPELINE_OK = False
     PIPELINE_ERROR = _exc
+    traceback.print_exc()
 
 # ============================================================
 # Palette
@@ -908,7 +910,10 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def _open_tools(self):
-        dialog = ToolsDialog(self, self.bridge)
+        dialog = ToolsDialog(
+            self.bridge,
+            self,
+        )        
         dialog.exec()
 
     def _open_help(self):
@@ -1830,7 +1835,12 @@ class ToolsDialog(QDialog):
 
     prepared = Signal(object, bool)
 
-    def __init__(self, parent=None, ui=None):
+
+    def __init__(
+        self,
+        ui,
+        parent=None,
+    ):        
         super().__init__(parent)
         self.setObjectName("Dialog")
         self.setWindowTitle("Outils - APO Studio")
@@ -2020,7 +2030,10 @@ class ToolsDialog(QDialog):
 
     def _launch_assisted_editing(self):
 
-        AssistedEditingDialog(self).exec()
+        AssistedEditingDialog(
+            self.ui,
+            self,
+        ).exec()
 # ============================================================
 # Démarrage
 # ============================================================

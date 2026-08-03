@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from assisted_editing.models.episode_project import EpisodeProject
+
 
 @dataclass(slots=True)
 class EpisodeInfo:
@@ -20,3 +22,5 @@ class EpisodeInfo:
     master_video: Path
 
     youtube_json: Path
+
+    project: EpisodeProject

@@ -1,47 +1,77 @@
-from assisted_editing.models.render_job import RenderJob
-from assisted_editing.services.ffmpeg_renderer import FFmpegRenderer
-from assisted_editing.services.render_validator import RenderValidator
-from assisted_editing.services.timeline_builder import TimelineBuilder
-from services.ffmpeg.ffmpeg_service import FFmpegService
-
+from assisted_editing.services.resource_preparer import ResourcePreparer
 
 
 class EditingEngine:
-    """Moteur de montage assisté."""
 
-    def __init__(
+    def __init__(self, ui):
+
+        self.ui = ui
+
+    # ==========================================
+
+    def prepare(
         self,
-        validator: RenderValidator,
-        timeline_builder: TimelineBuilder,
-        renderer: FFmpegRenderer,
-        ffmpeg_service: FFmpegService,
-    ) -> None:
+        episode,
+        intro=True,
+        outro=True,
+        logo=True,
+        overlay=True,
+        music=True,
+    ):
 
-        self._validator = validator
-        self._timeline_builder = timeline_builder
-        self._renderer = renderer
-        self._ffmpeg = ffmpeg_service
+        self.ui.log("")
+        self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        self.ui.log("🎬 Montage Assisté")
+        self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        self.ui.log(
+            f"Série : {episode.project_name}"
+        )
 
-    def render(
-        self,
-        render_job: RenderJob,
-    ) -> None:
-        """
-        Génère la vidéo finale.
-        """
+        self.ui.log(
+            f"Episode : {episode.episode_number}"
+        )
 
-        # Validation
-        self._validator.validate(render_job)
+        self.ui.log("")
 
-        # Construction de la timeline
-        timeline = self._timeline_builder.build(render_job)
+        self.ui.log("Ressources :")
 
-        # Construction de la commande FFmpeg
-        command = self._renderer.build(timeline)
+        self.ui.log(
+            f"{'✅' if intro else '❌'} Intro"
+        )
 
-        print("\nCommande FFmpeg :")
-        print(" ".join(command))
+        self.ui.log(
+            f"{'✅' if outro else '❌'} Outro"
+        )
 
-        # Exécution
-        self._ffmpeg.run(command)
+        self.ui.log(
+            f"{'✅' if logo else '❌'} Logo"
+        )
 
+        self.ui.log(
+            f"{'✅' if overlay else '❌'} Overlays"
+        )
+
+        self.ui.log(
+            f"{'✅' if music else '❌'} Musique"
+        )
+
+        self.ui.log("")
+
+        ResourcePreparer(self.ui).prepare(
+
+            episode,
+
+            intro=intro,
+
+            outro=outro,
+
+            logo=logo,
+
+            overlay=overlay,
+
+            music=music,
+
+        )
+
+        self.ui.log("")
+        self.ui.log("✅ Episode préparé.")

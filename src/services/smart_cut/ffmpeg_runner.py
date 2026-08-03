@@ -3,6 +3,13 @@ import subprocess
 
 from services.path_service import PathService
 
+from assisted_editing.models.episode_project import (
+    EpisodeProject,
+)
+from assisted_editing.services.episode_storage import (
+    EpisodeStorage,
+)
+
 
 class FFmpegRunner:
 
@@ -45,7 +52,9 @@ class FFmpegRunner:
                 settings
             )
 
-            progress = 75 + int(25 * (index + 1) / total)
+            progress = 75 + int(
+                25 * (index + 1) / total
+            )
 
             self.ui.progress(progress, 100)
 
@@ -64,7 +73,10 @@ class FFmpegRunner:
             f"🎬 Découpage de l'épisode {plan.index}..."
         )
 
+        # ==========================================
         # Dossier de l'épisode
+        # ==========================================
+
         episode_folder = (
             project.project_path
             / f"Episode {plan.index}"
@@ -75,7 +87,10 @@ class FFmpegRunner:
             exist_ok=True
         )
 
-        # Vidéo de l'épisode
+        # ==========================================
+        # Vidéo
+        # ==========================================
+
         output = (
             episode_folder
             / f"{project.series} Episode {plan.index}.mp4"
@@ -126,11 +141,43 @@ class FFmpegRunner:
         self._check_cancel()
 
         startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.dwFlags |= (
+            subprocess.STARTF_USESHOWWINDOW
+        )
 
         subprocess.run(
             command,
             check=True,
             startupinfo=startupinfo,
             creationflags=subprocess.CREATE_NO_WINDOW
+        )
+
+        # ==========================================
+        # Projet APO Studio
+        # ==========================================
+
+        EpisodeStorage().save(
+
+            EpisodeProject(
+
+                version="1.0",
+
+                series=project.series,
+
+                episode=plan.index,
+
+                prepared=False,
+
+                edited=False,
+
+                uploaded=False,
+
+            ),
+
+            episode_folder,
+
+        )
+
+        self.ui.log(
+            "📄 Projet épisode créé"
         )
