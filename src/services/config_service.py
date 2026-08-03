@@ -87,7 +87,7 @@ class ConfigService:
 
     def load(self):
 
-        with open(self.config_path, encoding="utf-8") as f:
+        with open(self.config_path, encoding="utf-8-sig") as f:
 
             self.data = json.load(f)
 
@@ -111,6 +111,10 @@ class ConfigService:
         data = self.data
 
         for key in keys[:-1]:
+
+            if key not in data or not isinstance(data[key], dict):
+                data[key] = {}
+
             data = data[key]
 
         data[keys[-1]] = value
