@@ -32,7 +32,11 @@ git push origin vX.Y.Z
 The GitHub Actions workflow `Build & Release` runs automatically on tag push.
 
 ### 5. Patch zip
-The workflow automatically creates `APOStudio_Patch_vX.Y.Z.zip` **only if** the previous release has a `manifest_v*.json` asset. If the previous release was published before the manifest system, the patch zip will be skipped (this is expected). To manually create a patch zip, run the diff from `tools/patch_builder.py` and `tools/patch_packager.py` after the build artifacts are available.
+The workflow automatically creates `APOStudio_Patch_vX.Y.Z.zip` **only if** the previous release has a `manifest_v*.json` asset. If the previous release was published before the manifest system, the patch zip will be skipped (this is expected).
+
+**Important:** The patch zip can only be created by the CI workflow (it needs the `dist/Apo Studio CPU/` build artifacts). It cannot be created manually from a dev machine because the CPU build requires Windows + PyInstaller. Do NOT try to create a patch zip locally using the GPU build — it will produce a full-size zip (~800+ MB) instead of a proper diff patch.
+
+If a patch zip is missing for a release, the next release (N+1) will automatically create it since the manifest for release N will then be available in the release assets.
 
 ### Key files
 - `src/app_info.py` — source of truth for VERSION
