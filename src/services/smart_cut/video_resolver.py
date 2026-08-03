@@ -68,13 +68,48 @@ class VideoResolver:
         # Vérification du transcript
         # ==========================================
 
-        transcript = project.project_path / "transcript.txt"
+        transcript = self._find_transcript(project)
 
-        if not transcript.exists():
+        if transcript is None:
 
             self.ui.log("📝 Aucun transcript trouvé")
             return None
 
-        self.ui.log("✅ Transcript trouvé")
+        self.ui.log(f"✅ Transcript trouvé : {transcript.name}")
+        self.ui.log(f"📂 {transcript.parent}")
 
         return project
+
+    # ==========================================
+
+    def _find_transcript(self, project):
+
+        candidates = []
+
+        if project.project_path is not None:
+            candidates.append(
+                project.project_path / "transcript.txt"
+            )
+
+        if project.working_path is not None:
+            candidates.append(
+                project.working_path / "transcript.txt"
+            )
+
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate
+
+        # Repli : recherche dans les dossiers "Episode N"
+        if project.project_path is not None:
+
+            for folder in sorted(
+                project.project_path.glob("Episode *")
+            ):
+
+                candidate = folder / "transcript.txt"
+
+                if candidate.exists():
+                    return candidate
+
+        return None
