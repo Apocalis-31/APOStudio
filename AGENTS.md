@@ -7,7 +7,9 @@ Before creating a release tag, ensure these steps are done in order:
 ### 1. Bump version in all files
 - `src/app_info.py` → `VERSION = "X.Y.Z"`
 - `installer/version.txt` → same version string
-- `installer/changelog.txt` → add new section at top with vX.Y.Z changes
+- `installer/changelog.txt` → **add new section at top** with vX.Y.Z changes (this is the release notes body shown on GitHub)
+
+⚠️ Ne pas oublier de mettre à jour `installer/changelog.txt` — c'est le corps de la release GitHub.
 
 ### 2. Regenerate version info
 ```bash
