@@ -8,7 +8,6 @@ from services.ai.whisper_service import WhisperService
 from services.ai.youtube_service import YoutubeService
 from services.thumbnail.thumbnail_service import ThumbnailService
 from services.path_service import PathService
-
 from services.workflow.workflow_manager import WorkflowManager
 
 
@@ -72,14 +71,30 @@ class ProjectManager:
                 video_path=video,
             )
 
-        storage.save(project)
         # ==================================================
-        # Dossier de travail
+        # Détection d'un épisode
         # ==================================================
 
-        # Le Smart Cut travaille désormais directement
-        # dans le dossier de la série.
-        project.working_path = project.project_path
+        episode_folder = video.parent
+
+        episode_json = (
+            episode_folder
+            / "apo_episode.json"
+        )
+
+        if episode_json.exists():
+
+            ui.log("📂 Episode détecté")
+
+            project.working_path = episode_folder
+
+        else:
+
+            project.working_path = project.project_path
+
+        # ==================================================
+
+        storage.save(project)
 
         # ==================================================
         # Transcription
