@@ -404,7 +404,8 @@ class MainWindow(QMainWindow):
     def __init__(self, scale=None):
         super().__init__()
         self._scale = scale if scale is not None else _screen_scale()
-        self.setWindowTitle("APO Studio 2.0")
+        from app_info import VERSION
+        self.setWindowTitle(f"APO Studio {VERSION}")
         # Taille par défaut précédente (rollback) : 800 x 520, mise à l'échelle.
         self._rollback_size = QSize(
             int(800 * self._scale),
@@ -1963,7 +1964,7 @@ def main():
     window = MainWindow(scale=scale)
     window.show()
 
-    window._log("🚀 APO Studio 2.0 démarré")
+    window._log(f"🚀 APO Studio {VERSION} démarré")
     window._log("Console prête — les journaux du pipeline s'affichent ici.")
 
     if PIPELINE_OK:
