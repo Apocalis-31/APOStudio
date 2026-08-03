@@ -411,12 +411,24 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._scale = scale if scale is not None else _screen_scale()
         self.setWindowTitle("APO Studio 2.0")
-        self._normal_size = QSize(
+        # Taille par défaut précédente (rollback) : 800 x 520, mise à l'échelle.
+        self._rollback_size = QSize(
             int(800 * self._scale),
             int(520 * self._scale),
         )
+        # Taille cible en test : 780 x 560.
+        self._normal_size = QSize(780, 560)
+        self.setMinimumSize(QSize(720, 400))
         self.resize(self._normal_size)
-        self.setMinimumSize(self._normal_size)
+
+        self._size_timer = QTimer(self)
+        self._size_timer.setSingleShot(True)
+        self._size_timer.setInterval(400)
+        self._size_timer.timeout.connect(self._persist_window_size)
+
+        saved = self._load_window_size()
+        if saved is not None:
+            self.resize(saved)
 
         icon_path = Path(BASE_DIR) / "assets" / "branding" / "logo_transparence_AS.ico"
         if icon_path.exists():
@@ -733,7 +745,36 @@ class MainWindow(QMainWindow):
 
     def resizeEvent(self, event):
         self._rebuild_session_row()
+        if hasattr(self, "_size_timer"):
+            self._size_timer.start()
         super().resizeEvent(event)
+
+    def _load_window_size(self):
+        config = getattr(self, "config", None)
+        if config is None:
+            return None
+        width = config.get("window.width")
+        height = config.get("window.height")
+        if not isinstance(width, int) or not isinstance(height, int):
+            return None
+        size = QSize(width, height)
+        if size.width() < self.minimumWidth() or size.height() < self.minimumHeight():
+            return None
+        return size
+
+    def _persist_window_size(self):
+        if self.config is None:
+            return
+        if self.isMaximized() or self.isFullScreen():
+            return
+        self.config.set("window.width", self.width())
+        self.config.set("window.height", self.height())
+        self.config.save()
+
+    def closeEvent(self, event):
+        self._size_timer.stop()
+        self._persist_window_size()
+        super().closeEvent(event)
 
     def _build_task_page(self):
         page = QWidget()
@@ -1119,16 +1160,19 @@ class MainWindow(QMainWindow):
 
     def _on_smart_cut_started(self):
         self._smart_cut_active = True
+        if self._session_start is None:
+            self._session_start = time.time()
         self._set_running(True)
         self._log("✂️ Découpage intelligent démarré")
 
     def _on_smart_cut_finished(self):
         self._smart_cut_active = False
         if self.queue_manager is None or not self.queue_manager.running:
+            self._session_start = None
             self._set_running(False)
-        if self._session_start is None:
             self.ring.set_progress(0)
             self.ring.set_time("--:--", "--:--")
+            self.session_values["Temps"].setText("—")
 
     def _refresh_model_card(self):
         if self.config is None:
@@ -1168,6 +1212,13 @@ class MainWindow(QMainWindow):
         )
 
     def _estimated_remaining(self):
+        if self._smart_cut_active:
+            progress = self.ring.progress()
+            if progress <= 0 or self._session_start is None:
+                return 0
+            elapsed = time.time() - self._session_start
+            total_est = elapsed * 100.0 / progress
+            return max(total_est - elapsed, 0)
         if self._session_start is None:
             return 0
         elapsed = time.time() - self._session_start
