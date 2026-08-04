@@ -5,6 +5,7 @@ from assisted_editing.services.render_validator import RenderValidator
 from assisted_editing.services.resource_preparer import ResourcePreparer
 from assisted_editing.services.timeline_builder import TimelineBuilder
 from assisted_editing.services.ffmpeg_executor import FFmpegExecutor
+from assisted_editing.models.audio_settings import AudioSettings
 
 
 class EditingEngine:
@@ -154,13 +155,20 @@ class EditingEngine:
         self.ui.log("✅ RenderJob valide")
 
         # ==================================================
+        # Paramètres audio
+        # ==================================================
+
+        audio_settings = AudioSettings()
+
+        # ==================================================
         # Timeline
         # ==================================================
 
         timeline = TimelineBuilder(
             MediaProbe()
         ).build(
-            render_job
+            render_job,
+            audio_settings,
         )
 
         self.ui.log("")
@@ -200,6 +208,22 @@ class EditingEngine:
 
         self.ui.log("")
         self.ui.log("✅ Timeline construite")
+        self.ui.log("")
+        self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        self.ui.log("🎵 Paramètres Audio")
+        self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        self.ui.log(
+            f"Volume Intro : {timeline.audio.intro_volume * 100:.0f}%"
+        )
+
+        self.ui.log(
+            f"Volume VOD   : {timeline.audio.vod_volume * 100:.0f}%"
+        )
+
+        self.ui.log(
+            f"Fondu retour : {timeline.audio.fade_duration:.1f}s"
+        )
 
         # ==================================================
         # Commande FFmpeg

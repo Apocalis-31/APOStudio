@@ -6,10 +6,6 @@ class FFmpegRenderer:
     Construit les commandes FFmpeg à partir d'une Timeline.
     """
 
-    INTRO_VOLUME = 1.0
-    DUCKING_VOLUME = 0.10
-    DUCKING_FADE = 1.5
-
     # =====================================================
 
     def __init__(self):
@@ -286,6 +282,8 @@ class FFmpegRenderer:
         Construit le filtre audio complet.
         """
 
+        audio = self._timeline.audio
+
         intro_duration = (
             self._timeline.introduction_duration
             if self._timeline.introduction_duration is not None
@@ -293,14 +291,18 @@ class FFmpegRenderer:
         )
 
         ducking_expression = self._build_ducking_expression(
-            intro_duration
+            intro_duration,
+            audio.vod_volume,
+            audio.fade_duration,
         )
 
         return (
 
-            f"[0:a]volume='{ducking_expression}'[bg];"
+            f"[{self._master_index}:a]"
+            f"volume='{ducking_expression}'[bg];"
 
-            f"[1:a]volume={self.INTRO_VOLUME}[intro];"
+            f"[{self._intro_index}:a]"
+            f"volume={audio.intro_volume}[intro];"
 
             "[bg][intro]"
 
@@ -313,6 +315,8 @@ class FFmpegRenderer:
     def _build_ducking_expression(
         self,
         intro_duration: float,
+        ducking_volume: float,
+        fade_duration: float,
     ) -> str:
         """
         Construit l'expression FFmpeg permettant
@@ -321,7 +325,7 @@ class FFmpegRenderer:
         progressivement.
         """
 
-        fade_end = intro_duration + self.DUCKING_FADE
+        fade_end = intro_duration + fade_duration
 
         return (
 
@@ -329,19 +333,19 @@ class FFmpegRenderer:
 
             f"lt(t,{intro_duration}),"
 
-            f"{self.DUCKING_VOLUME},"
+            f"{ducking_volume},"
 
             "if("
 
             f"lt(t,{fade_end}),"
 
-            f"{self.DUCKING_VOLUME}"
+            f"{ducking_volume}"
 
             f"+(t-{intro_duration})"
 
-            f"*({1-self.DUCKING_VOLUME}"
+            f"*({1-ducking_volume}"
 
-            f"/{self.DUCKING_FADE}),"
+            f"/{fade_duration}),"
 
             "1"
 

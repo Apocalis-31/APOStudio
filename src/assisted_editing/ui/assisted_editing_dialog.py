@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 from assisted_editing.services.editing_engine import EditingEngine
 from assisted_editing.services.episode_repository import EpisodeRepository
 from assisted_editing.workers.assisted_editing_worker import AssistedEditingWorker
+from PySide6.QtWidgets import QSlider
 
 
 class AssistedEditingDialog(QDialog):
@@ -37,12 +38,19 @@ class AssistedEditingDialog(QDialog):
 
         self.setObjectName("Dialog")
         self.setWindowTitle("Montage Assisté")
-        self.setMinimumWidth(700)
+        self.setMinimumWidth(1150)
         self.setMinimumHeight(760)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(12)
+
+        layout.setContentsMargins(
+            20,
+            20,
+            20,
+            20,
+        )
+
+        layout.setSpacing(15)
 
         # ==================================================
         # Titre
@@ -50,6 +58,7 @@ class AssistedEditingDialog(QDialog):
 
         title = QLabel("🎬 Montage Assisté")
         title.setObjectName("DialogTitle")
+
         layout.addWidget(title)
 
         subtitle = QLabel(
@@ -62,43 +71,257 @@ class AssistedEditingDialog(QDialog):
         layout.addWidget(subtitle)
 
         # ==================================================
+        # Zone principale
+        # ==================================================
+
+        content = QHBoxLayout()
+
+        content.setSpacing(20)
+
+        layout.addLayout(
+            content,
+            1,
+        )
+
+        # ==================================================
+        # Colonne gauche
+        # ==================================================
+
+        left_column = QVBoxLayout()
+
+        left_column.setSpacing(15)
+
+        content.addLayout(
+            left_column,
+            0,
+        )
+
+        # ==================================================
+        # Colonne droite
+        # ==================================================
+
+        right_column = QVBoxLayout()
+
+        right_column.setSpacing(15)
+
+        content.addLayout(
+            right_column,
+            1,
+        )
+        # ==================================================
         # Episodes
         # ==================================================
 
         section = QLabel("📺 EPISODES À PRÉPARER")
         section.setObjectName("DialogSection")
-        layout.addWidget(section)
+
+        right_column.addWidget(section)
 
         self.episode_tree = QTreeWidget()
 
         self.episode_tree.setHeaderHidden(True)
 
-        self.episode_tree.setMinimumHeight(260)
+        self.episode_tree.setMinimumWidth(650)
+        self.episode_tree.setMinimumHeight(520)
 
         self.episode_tree.setSelectionMode(
             QAbstractItemView.SelectionMode.SingleSelection
         )
 
-        layout.addWidget(self.episode_tree)
+        right_column.addWidget(
+            self.episode_tree,
+            1,
+        )
 
         self._load_episodes()
-
         # ==================================================
         # Ressources
         # ==================================================
 
-        section = QLabel("⚙ RESSOURCES")
+        section = QLabel("📦 RESSOURCES")
         section.setObjectName("DialogSection")
-        layout.addWidget(section)
+
+        left_column.addWidget(section)
 
         resources_layout = QVBoxLayout()
-        resources_layout.setSpacing(10)
+
+        resources_layout.setSpacing(12)
+
+        left_column.addLayout(resources_layout)
+
+        # ==================================================
+        # Audio
+        # ==================================================
+
+        section = QLabel("🎵 AUDIO")
+        section.setObjectName("DialogSection")
+
+        left_column.addWidget(section)
+
+        audio_layout = QVBoxLayout()
+
+        audio_layout.setSpacing(12)
+
+        left_column.addLayout(audio_layout)
+
+        # ==================================================
+        # Volume Intro
+        # ==================================================
+
+        self.intro_volume_title = QLabel(
+            "Volume de l'introduction"
+        )
+
+        audio_layout.addWidget(
+            self.intro_volume_title
+        )
+
+        self.intro_volume_slider = QSlider(
+            Qt.Orientation.Horizontal
+        )
+
+        self.intro_volume_slider.setRange(
+            0,
+            100,
+        )
+
+        self.intro_volume_slider.setValue(
+            100,
+        )
+
+        audio_layout.addWidget(
+            self.intro_volume_slider
+        )
+
+        self.intro_volume_value = QLabel(
+            "100 %"
+        )
+
+        self.intro_volume_value.setAlignment(
+            Qt.AlignmentFlag.AlignRight
+        )
+
+        audio_layout.addWidget(
+            self.intro_volume_value
+        )
+
+        # ==================================================
+        # Volume VOD
+        # ==================================================
+
+        self.vod_volume_title = QLabel(
+            "Volume de la vidéo"
+        )
+
+        audio_layout.addWidget(
+            self.vod_volume_title
+        )
+
+        self.vod_volume_slider = QSlider(
+            Qt.Orientation.Horizontal
+        )
+
+        self.vod_volume_slider.setRange(
+            0,
+            100,
+        )
+
+        self.vod_volume_slider.setValue(
+            10,
+        )
+
+        audio_layout.addWidget(
+            self.vod_volume_slider
+        )
+
+        self.vod_volume_value = QLabel(
+            "10 %"
+        )
+
+        self.vod_volume_value.setAlignment(
+            Qt.AlignmentFlag.AlignRight
+        )
+
+        audio_layout.addWidget(
+            self.vod_volume_value
+        )
+
+        # ==================================================
+        # Fondu retour
+        # ==================================================
+
+        self.fade_title = QLabel(
+            "Durée du fondu"
+        )
+
+        audio_layout.addWidget(
+            self.fade_title
+        )
+
+        self.fade_slider = QSlider(
+            Qt.Orientation.Horizontal
+        )
+
+        self.fade_slider.setRange(
+            5,
+            50,
+        )
+
+        self.fade_slider.setValue(
+            15,
+        )
+
+        audio_layout.addWidget(
+            self.fade_slider
+        )
+
+        self.fade_value = QLabel(
+            "1.5 s"
+        )
+
+        self.fade_value.setAlignment(
+            Qt.AlignmentFlag.AlignRight
+        )
+
+        audio_layout.addWidget(
+            self.fade_value)
+
+        # ==================================================
+        # Mise à jour des labels
+        # ==================================================
+
+        self.intro_volume_slider.valueChanged.connect(
+
+            lambda value:
+            self.intro_volume_value.setText(
+                f"{value} %"
+            )
+
+        )
+
+        self.vod_volume_slider.valueChanged.connect(
+
+            lambda value:
+            self.vod_volume_value.setText(
+                f"{value} %"
+            )
+
+        )
+
+        self.fade_slider.valueChanged.connect(
+
+            lambda value:
+            self.fade_value.setText(
+                f"{value / 10:.1f} s"
+            )
+
+        )
 
         # ==================================================
         # Intro
         # ==================================================
 
-        self.intro = QCheckBox("Ajouter une introduction audio")
+        self.intro = QCheckBox("Introduction audio")
         self.intro.setChecked(True)
         self.intro.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -110,12 +333,19 @@ class AssistedEditingDialog(QDialog):
         resources_layout.addWidget(self.intro_label)
 
         intro_button = QPushButton("Parcourir...")
+
         intro_button.clicked.connect(
+
             lambda: self._select_resource(
+
                 "Choisir une introduction",
+
                 "Audio (*.mp3 *.wav)",
+
                 "intro",
+
             )
+
         )
 
         resources_layout.addWidget(intro_button)
@@ -124,7 +354,7 @@ class AssistedEditingDialog(QDialog):
         # Outro
         # ==================================================
 
-        self.outro = QCheckBox("Ajouter un ending audio")
+        self.outro = QCheckBox("Ending audio")
         self.outro.setChecked(True)
         self.outro.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -136,12 +366,19 @@ class AssistedEditingDialog(QDialog):
         resources_layout.addWidget(self.outro_label)
 
         outro_button = QPushButton("Parcourir...")
+
         outro_button.clicked.connect(
+
             lambda: self._select_resource(
+
                 "Choisir un ending",
+
                 "Audio (*.mp3 *.wav)",
+
                 "outro",
+
             )
+
         )
 
         resources_layout.addWidget(outro_button)
@@ -150,7 +387,7 @@ class AssistedEditingDialog(QDialog):
         # Logo
         # ==================================================
 
-        self.logo = QCheckBox("Ajouter un logo")
+        self.logo = QCheckBox("Logo animé")
         self.logo.setChecked(True)
         self.logo.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -162,33 +399,28 @@ class AssistedEditingDialog(QDialog):
         resources_layout.addWidget(self.logo_label)
 
         logo_button = QPushButton("Parcourir...")
+
         logo_button.clicked.connect(
+
             lambda: self._select_resource(
+
                 "Choisir un logo",
-                "Médias (*.png *.gif *.webm *.mov)",
+
+                "Médias (*.mov *.webm *.png)",
+
                 "logo",
+
             )
+
         )
 
         resources_layout.addWidget(logo_button)
 
         # ==================================================
-        # Overlay
-        # ==================================================
-
-        self.overlay = QCheckBox(
-            "Ajouter les overlays (bientôt)"
-        )
-        self.overlay.setChecked(False)
-        self.overlay.setEnabled(False)
-
-        resources_layout.addWidget(self.overlay)
-
-        # ==================================================
         # Musique
         # ==================================================
 
-        self.music = QCheckBox("Ajouter une musique")
+        self.music = QCheckBox("Musique de fond")
         self.music.setChecked(False)
         self.music.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -200,17 +432,32 @@ class AssistedEditingDialog(QDialog):
         resources_layout.addWidget(self.music_label)
 
         music_button = QPushButton("Parcourir...")
+
         music_button.clicked.connect(
+
             lambda: self._select_resource(
+
                 "Choisir une musique",
+
                 "Audio (*.mp3 *.wav)",
+
                 "music",
+
             )
+
         )
 
         resources_layout.addWidget(music_button)
 
-        layout.addLayout(resources_layout)
+        # ==================================================
+        # Overlay
+        # ==================================================
+
+        self.overlay = QCheckBox("Overlays (bientôt)")
+        self.overlay.setChecked(False)
+        self.overlay.setEnabled(False)
+
+        resources_layout.addWidget(self.overlay)
 
         layout.addStretch()
 

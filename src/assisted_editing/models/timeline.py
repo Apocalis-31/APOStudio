@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from assisted_editing.models.audio_settings import AudioSettings
 from assisted_editing.models.resource import Resource
 
 
@@ -13,37 +14,37 @@ class Timeline:
     Elle est indépendante de FFmpeg.
     """
 
-    # ==========================
+    # ==================================================
     # Médias principaux
-    # ==========================
+    # ==================================================
 
     master_video: Path
     output_video: Path
 
-    # ==========================
-    # Audio
-    # ==========================
+    # ==================================================
+    # Ressources
+    # ==================================================
 
     introduction: Resource | None = None
     ending: Resource | None = None
     music: Resource | None = None
-
-    # ==========================
-    # Overlays
-    # ==========================
-
-    overlays: list[Resource] = field(default_factory=list)
-
-    # ==========================
-    # Intro
-    # ==========================
-
-    introduction_duration: float | None = None
-
-    # ==========================
-    # Logo
-    # ==========================
-
     logo: Resource | None = None
 
+    overlays: list[Resource] = field(
+        default_factory=list
+    )
+
+    # ==================================================
+    # Informations calculées
+    # ==================================================
+
+    introduction_duration: float | None = None
     logo_duration: float | None = None
+
+    # ==================================================
+    # Paramètres audio
+    # ==================================================
+
+    audio: AudioSettings = field(
+        default_factory=AudioSettings
+    )
