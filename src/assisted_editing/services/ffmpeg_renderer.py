@@ -296,17 +296,24 @@ class FFmpegRenderer:
             audio.fade_duration,
         )
 
+        print("========================================")
+        print("INTRO :", audio.intro_volume)
+        print("VOD   :", audio.vod_volume)
+        print("FADE  :", audio.fade_duration)
+        print("EXPR  :", ducking_expression)
+        print("========================================")
+
         return (
 
             f"[{self._master_index}:a]"
-            f"volume='{ducking_expression}'[bg];"
+            f"volume='{ducking_expression}':eval=frame[bg];"
 
             f"[{self._intro_index}:a]"
             f"volume={audio.intro_volume}[intro];"
 
             "[bg][intro]"
 
-            "amix=inputs=2:duration=longest[a]"
+            "amix=inputs=2:duration=longest:normalize=0[a]"
 
         )
 

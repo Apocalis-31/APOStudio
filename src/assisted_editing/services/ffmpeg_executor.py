@@ -38,7 +38,7 @@ class FFmpegExecutor:
         self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         self.ui.log(f"FFmpeg : {ffmpeg}")
         self.ui.log("")
-
+        print(full_command)
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= (
             subprocess.STARTF_USESHOWWINDOW
