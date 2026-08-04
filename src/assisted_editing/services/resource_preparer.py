@@ -1,4 +1,3 @@
-from pathlib import Path
 from shutil import copy2
 
 from assisted_editing.services.episode_storage import EpisodeStorage
@@ -33,18 +32,6 @@ class ResourcePreparer:
 
         self.ui.log("📦 Préparation des ressources...")
 
-        self.ui.log(f"intro      : {intro}")
-        self.ui.log(f"intro_path : {intro_path}")
-
-        self.ui.log(f"outro      : {outro}")
-        self.ui.log(f"outro_path : {outro_path}")
-
-        self.ui.log(f"logo       : {logo}")
-        self.ui.log(f"logo_path  : {logo_path}")
-
-        self.ui.log(f"music      : {music}")
-        self.ui.log(f"music_path : {music_path}")
-
         resources_folder = (
             episode.episode_folder
             / "Resources"
@@ -61,18 +48,27 @@ class ResourcePreparer:
 
         if intro and intro_path is not None:
 
-            copy2(
-
-                intro_path,
-
+            destination = (
                 resources_folder
-                / intro_path.name,
-
+                / f"intro{intro_path.suffix}"
             )
 
-            self.ui.log(
-                f"   ✅ Intro : {intro_path.name}"
-            )
+            if intro_path.resolve() == destination.resolve():
+
+                self.ui.log(
+                    "   ⏩ Intro déjà présente"
+                )
+
+            else:
+
+                copy2(
+                    intro_path,
+                    destination,
+                )
+
+                self.ui.log(
+                    f"   ✅ Intro : {destination.name}"
+                )
 
         # ==========================================
         # Outro
@@ -80,18 +76,27 @@ class ResourcePreparer:
 
         if outro and outro_path is not None:
 
-            copy2(
-
-                outro_path,
-
+            destination = (
                 resources_folder
-                / outro_path.name,
-
+                / f"outro{outro_path.suffix}"
             )
 
-            self.ui.log(
-                f"   ✅ Outro : {outro_path.name}"
-            )
+            if outro_path.resolve() == destination.resolve():
+
+                self.ui.log(
+                    "   ⏩ Outro déjà présente"
+                )
+
+            else:
+
+                copy2(
+                    outro_path,
+                    destination,
+                )
+
+                self.ui.log(
+                    f"   ✅ Outro : {destination.name}"
+                )
 
         # ==========================================
         # Logo
@@ -99,18 +104,27 @@ class ResourcePreparer:
 
         if logo and logo_path is not None:
 
-            copy2(
-
-                logo_path,
-
+            destination = (
                 resources_folder
-                / logo_path.name,
-
+                / f"logo{logo_path.suffix}"
             )
 
-            self.ui.log(
-                f"   ✅ Logo : {logo_path.name}"
-            )
+            if logo_path.resolve() == destination.resolve():
+
+                self.ui.log(
+                    "   ⏩ Logo déjà présent"
+                )
+
+            else:
+
+                copy2(
+                    logo_path,
+                    destination,
+                )
+
+                self.ui.log(
+                    f"   ✅ Logo : {destination.name}"
+                )
 
         # ==========================================
         # Musique
@@ -118,18 +132,27 @@ class ResourcePreparer:
 
         if music and music_path is not None:
 
-            copy2(
-
-                music_path,
-
+            destination = (
                 resources_folder
-                / music_path.name,
-
+                / f"music{music_path.suffix}"
             )
 
-            self.ui.log(
-                f"   ✅ Musique : {music_path.name}"
-            )
+            if music_path.resolve() == destination.resolve():
+
+                self.ui.log(
+                    "   ⏩ Musique déjà présente"
+                )
+
+            else:
+
+                copy2(
+                    music_path,
+                    destination,
+                )
+
+                self.ui.log(
+                    f"   ✅ Musique : {destination.name}"
+                )
 
         # ==========================================
 

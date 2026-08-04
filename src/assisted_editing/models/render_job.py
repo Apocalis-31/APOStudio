@@ -23,3 +23,5 @@ class RenderJob:
     fade_out: float
 
     music: Resource | None = None
+
+    logo: Resource | None = None

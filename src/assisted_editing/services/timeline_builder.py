@@ -28,6 +28,7 @@ class TimelineBuilder:
         )
 
         timeline.introduction = render_job.introduction
+        timeline.logo = render_job.logo
         timeline.ending = render_job.ending
         timeline.music = render_job.music
 
@@ -36,6 +37,13 @@ class TimelineBuilder:
             timeline.introduction_duration = (
                 self._probe.get_duration(
                     render_job.introduction.path
+                )
+            )
+        if render_job.logo:
+
+            timeline.logo_duration = (
+                self._probe.get_duration(
+                    render_job.logo.path
                 )
             )
 

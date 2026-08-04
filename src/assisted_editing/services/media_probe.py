@@ -1,20 +1,15 @@
 import json
+import subprocess
+
 from pathlib import Path
 
-from services.ffmpeg.ffmpeg_service import FFmpegService
+from services.path_service import PathService
 
 
 class MediaProbe:
     """
     Récupère les informations d'un média via ffprobe.
     """
-
-    def __init__(
-        self,
-        ffmpeg: FFmpegService,
-    ) -> None:
-
-        self._ffmpeg = ffmpeg
 
     # =====================================================
 
@@ -26,20 +21,50 @@ class MediaProbe:
         Retourne la durée d'un média en secondes.
         """
 
-        result = self._ffmpeg.run_ffprobe([
+        ffprobe = (
+            PathService.ffmpeg()
+            / "ffprobe.exe"
+        )
 
-            "-v",
-            "quiet",
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= (
+            subprocess.STARTF_USESHOWWINDOW
+        )
 
-            "-print_format",
-            "json",
+        result = subprocess.run(
 
-            "-show_format",
+            [
 
-            str(media),
+                str(ffprobe),
 
-        ])
+                "-v",
+                "quiet",
 
-        data = json.loads(result.stdout)
+                "-print_format",
+                "json",
 
-        return float(data["format"]["duration"])
+                "-show_format",
+
+                str(media),
+
+            ],
+
+            capture_output=True,
+
+            text=True,
+
+            check=True,
+
+            startupinfo=startupinfo,
+
+            creationflags=subprocess.CREATE_NO_WINDOW,
+
+        )
+
+        data = json.loads(
+            result.stdout
+        )
+
+        return float(
+            data["format"]["duration"]
+        )

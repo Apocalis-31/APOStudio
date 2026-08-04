@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 
 from assisted_editing.services.editing_engine import EditingEngine
 from assisted_editing.services.episode_repository import EpisodeRepository
+from assisted_editing.workers.assisted_editing_worker import AssistedEditingWorker
 
 
 class AssistedEditingDialog(QDialog):
@@ -397,13 +398,14 @@ class AssistedEditingDialog(QDialog):
         if episode is None:
             return
 
-        engine = EditingEngine(
-            self.ui
-        )
+        self.prepare_button.setEnabled(False)
+        self.prepare_button.setText("Préparation...")
 
-        engine.prepare(
+        self.worker = AssistedEditingWorker(
 
-            episode,
+            ui=self.ui,
+
+            episode=episode,
 
             intro=self.intro.isChecked(),
             intro_path=self.intro_path,
@@ -419,6 +421,21 @@ class AssistedEditingDialog(QDialog):
             music=self.music.isChecked(),
             music_path=self.music_path,
 
+            on_finished=self._prepare_finished,
+
         )
 
-        self.accept()
+        self.worker.start()
+
+    # ==================================================
+
+    def _prepare_finished(
+        self,
+        cancelled=False,
+    ):
+
+        self.prepare_button.setEnabled(True)
+        self.prepare_button.setText("Préparer")
+
+        if not cancelled:
+            self.accept()

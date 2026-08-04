@@ -39,3 +39,11 @@ class Timeline:
     # ==========================
 
     introduction_duration: float | None = None
+
+    # ==========================
+    # Logo
+    # ==========================
+
+    logo: Resource | None = None
+
+    logo_duration: float | None = None

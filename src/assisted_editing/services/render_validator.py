@@ -53,3 +53,11 @@ class RenderValidator:
             raise RenderValidationError(
                 "La durée du fade out ne peut pas être négative."
             )
+
+        if (
+            render_job.logo is not None
+            and not render_job.logo.path.exists()
+        ):
+            raise RenderValidationError(
+                f"Le logo est introuvable : {render_job.logo.path}"
+            )
