@@ -1,11 +1,11 @@
+from assisted_editing.models.audio_settings import AudioSettings
+from assisted_editing.services.ffmpeg_executor import FFmpegExecutor
 from assisted_editing.services.ffmpeg_renderer import FFmpegRenderer
 from assisted_editing.services.media_probe import MediaProbe
 from assisted_editing.services.render_job_factory import RenderJobFactory
 from assisted_editing.services.render_validator import RenderValidator
 from assisted_editing.services.resource_preparer import ResourcePreparer
 from assisted_editing.services.timeline_builder import TimelineBuilder
-from assisted_editing.services.ffmpeg_executor import FFmpegExecutor
-from assisted_editing.models.audio_settings import AudioSettings
 
 
 class EditingEngine:
@@ -14,7 +14,7 @@ class EditingEngine:
 
         self.ui = ui
 
-    # ==========================================
+    # ==================================================
 
     def prepare(
         self,
@@ -33,6 +33,10 @@ class EditingEngine:
 
         music=True,
         music_path=None,
+
+        intro_volume=1.0,
+        vod_volume=0.10,
+        fade_duration=1.5,
     ):
 
         # ==================================================
@@ -155,10 +159,18 @@ class EditingEngine:
         self.ui.log("✅ RenderJob valide")
 
         # ==================================================
-        # Paramètres audio
+        # Paramètres Audio
         # ==================================================
 
-        audio_settings = AudioSettings()
+        audio_settings = AudioSettings(
+
+            intro_volume=intro_volume,
+
+            vod_volume=vod_volume,
+
+            fade_duration=fade_duration,
+
+        )
 
         # ==================================================
         # Timeline
@@ -208,6 +220,11 @@ class EditingEngine:
 
         self.ui.log("")
         self.ui.log("✅ Timeline construite")
+
+        # ==================================================
+        # Paramètres Audio
+        # ==================================================
+
         self.ui.log("")
         self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         self.ui.log("🎵 Paramètres Audio")
@@ -250,7 +267,7 @@ class EditingEngine:
                 value = command[index + 1]
 
                 self.ui.log(
-                    f"    {argument} \"{value}\" \\"
+                    f'    {argument} "{value}" \\'
                 )
 
             elif (
@@ -268,6 +285,9 @@ class EditingEngine:
         self.ui.log("")
         self.ui.log("✅ Commande générée")
 
+        # ==================================================
+        # Exécution
+        # ==================================================
 
         FFmpegExecutor(
             self.ui

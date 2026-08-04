@@ -668,6 +668,21 @@ class AssistedEditingDialog(QDialog):
             music=self.music.isChecked(),
             music_path=self.music_path,
 
+            intro_volume=(
+                self.intro_volume_slider.value()
+                / 100
+            ),
+
+            vod_volume=(
+                self.vod_volume_slider.value()
+                / 100
+            ),
+
+            fade_duration=(
+                self.fade_slider.value()
+                / 10
+            ),
+
         )
 
         self.worker.finished.connect(

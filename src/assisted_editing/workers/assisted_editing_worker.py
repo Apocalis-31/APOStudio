@@ -22,7 +22,10 @@ class AssistedEditingWorker(QObject):
         overlay,
         music,
         music_path,
-    ):
+        intro_volume,
+        vod_volume,
+        fade_duration,
+            ):
         super().__init__()
 
         self.ui = ui
@@ -41,6 +44,10 @@ class AssistedEditingWorker(QObject):
 
         self.music = music
         self.music_path = music_path
+
+        self.intro_volume = intro_volume
+        self.vod_volume = vod_volume
+        self.fade_duration = fade_duration
 
     # ==================================================
 
@@ -81,6 +88,10 @@ class AssistedEditingWorker(QObject):
 
                 music=self.music,
                 music_path=self.music_path,
+
+                intro_volume=self.intro_volume,
+                vod_volume=self.vod_volume,
+                fade_duration=self.fade_duration,
 
             )
 
