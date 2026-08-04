@@ -1,32 +1,29 @@
+from PySide6.QtCore import QObject, Signal
 import threading
 import traceback
 
 from assisted_editing.services.editing_engine import EditingEngine
 
 
-class AssistedEditingWorker:
+class AssistedEditingWorker(QObject):
+
+    finished = Signal(bool)
 
     def __init__(
         self,
         ui,
         episode,
-
         intro,
         intro_path,
-
         outro,
         outro_path,
-
         logo,
         logo_path,
-
         overlay,
-
         music,
         music_path,
-
-        on_finished=None,
     ):
+        super().__init__()
 
         self.ui = ui
         self.episode = episode
@@ -45,21 +42,17 @@ class AssistedEditingWorker:
         self.music = music
         self.music_path = music_path
 
-        self.on_finished = on_finished
-
     # ==================================================
 
     def start(self):
 
-        thread = threading.Thread(
+        threading.Thread(
 
             target=self.run,
 
             daemon=True,
 
-        )
-
-        thread.start()
+        ).start()
 
     # ==================================================
 
@@ -102,8 +95,4 @@ class AssistedEditingWorker:
 
         finally:
 
-            if self.on_finished:
-
-                self.on_finished(
-                    cancelled=not success
-                )
+            self.finished.emit(success)

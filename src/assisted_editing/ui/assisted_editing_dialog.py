@@ -421,8 +421,10 @@ class AssistedEditingDialog(QDialog):
             music=self.music.isChecked(),
             music_path=self.music_path,
 
-            on_finished=self._prepare_finished,
+        )
 
+        self.worker.finished.connect(
+            self._prepare_finished
         )
 
         self.worker.start()
@@ -431,11 +433,15 @@ class AssistedEditingDialog(QDialog):
 
     def _prepare_finished(
         self,
-        cancelled=False,
+        success: bool,
     ):
 
         self.prepare_button.setEnabled(True)
-        self.prepare_button.setText("Préparer")
 
-        if not cancelled:
+        self.prepare_button.setText(
+            "Préparer"
+        )
+
+        if success:
+
             self.accept()

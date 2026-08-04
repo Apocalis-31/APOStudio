@@ -12,89 +12,283 @@ class FFmpegRenderer:
 
     # =====================================================
 
+    def __init__(self):
+
+        self._timeline = None
+
+        self._inputs = []
+        self._filters = []
+        self._maps = []
+        self._codecs = []
+        self._output = []
+        self._master_index = 0
+        self._intro_index = None
+        self._logo_index = None
+
+    # =====================================================
+
     def build(
         self,
         timeline: Timeline,
     ) -> list[str]:
 
-        if timeline.introduction:
-            return self._build_intro_command(timeline)
+        self._timeline = timeline
 
-        return self._build_simple_command(timeline)
+        self._reset()
 
-    # =====================================================
+        self._build_inputs()
+        self._build_filters()
+        self._build_maps()
+        self._build_codecs()
+        self._build_output()
 
-    def _build_simple_command(
-        self,
-        timeline: Timeline,
-    ) -> list[str]:
-
-        return [
-
-            "-y",
-
-            "-i",
-            str(timeline.master_video),
-
-            "-c",
-            "copy",
-
-            str(timeline.output_video),
-
-        ]
+        return self._assemble_command()
 
     # =====================================================
 
-    def _build_intro_command(
+    def _reset(self):
+
+        self._inputs.clear()
+        self._filters.clear()
+        self._maps.clear()
+        self._codecs.clear()
+        self._output.clear()
+        self._master_index = 0
+        self._intro_index = None
+        self._logo_index = None
+
+    # =====================================================
+
+    def _build_inputs(self):
+
+        index = 0
+
+        self._master_index = index
+
+        self._inputs.extend([
+
+            "-i",
+            str(self._timeline.master_video),
+
+        ])
+
+        index += 1
+
+        if self._timeline.introduction:
+
+            self._intro_index = index
+
+            self._inputs.extend([
+
+                "-i",
+                str(self._timeline.introduction.path),
+
+            ])
+
+            index += 1
+
+        if self._timeline.logo:
+
+            self._logo_index = index
+
+            self._inputs.extend([
+
+                "-i",
+                str(self._timeline.logo.path),
+
+            ])
+
+            index += 1
+
+    # =====================================================
+
+    def _build_filters(self):
+
+        if self._timeline.logo:
+
+            self._filters.append(
+                self._build_video_filter()
+            )
+
+        if self._timeline.introduction:
+
+            self._filters.append(
+                self._build_audio_filter()
+            )
+
+    # =====================================================
+
+    def _build_maps(self):
+
+        # ------------------------------
+        # Vidéo
+        # ------------------------------
+
+        if self._timeline.logo:
+
+            self._maps.extend([
+
+                "-map",
+                "[v]",
+
+            ])
+
+        else:
+
+            self._maps.extend([
+
+                "-map",
+                "0:v",
+
+            ])
+
+        # ------------------------------
+        # Audio
+        # ------------------------------
+
+        if self._timeline.introduction:
+
+            self._maps.extend([
+
+                "-map",
+                "[a]",
+
+            ])
+
+        else:
+
+            self._maps.extend([
+
+                "-map",
+                "0:a",
+
+            ])
+
+    # =====================================================
+
+    def _build_codecs(self):
+
+        # ------------------------------
+        # Vidéo
+        # ------------------------------
+
+        if self._timeline.logo:
+
+            self._codecs.extend([
+
+                "-c:v",
+                "libx264",
+
+                "-preset",
+                "veryfast",
+
+                "-crf",
+                "18",
+
+            ])
+
+        else:
+
+            self._codecs.extend([
+
+                "-c:v",
+                "copy",
+
+            ])
+
+        # ------------------------------
+        # Audio
+        # ------------------------------
+
+        if self._timeline.introduction:
+
+            self._codecs.extend([
+
+                "-c:a",
+                "aac",
+
+                "-b:a",
+                "192k",
+
+            ])
+
+        else:
+
+            self._codecs.extend([
+
+                "-c:a",
+                "copy",
+
+            ])
+
+    # =====================================================
+
+    def _build_output(self):
+
+        self._output.append(
+            str(self._timeline.output_video)
+        )
+
+    # =====================================================
+
+    def _assemble_command(
         self,
-        timeline: Timeline,
     ) -> list[str]:
 
-        return [
+        command = [
 
             "-y",
 
-            "-i",
-            str(timeline.master_video),
-
-            "-i",
-            str(timeline.introduction.path),
-
-            "-filter_complex",
-            self._build_audio_filter(timeline),
-
-            "-map",
-            "0:v",
-
-            "-map",
-            "[a]",
-
-            "-c:v",
-            "copy",
-
-            "-c:a",
-            "aac",
-
-            "-b:a",
-            "192k",
-
-            str(timeline.output_video),
+            *self._inputs,
 
         ]
+
+        if self._filters:
+
+            command.extend([
+
+                "-filter_complex",
+
+                ";".join(self._filters),
+
+            ])
+
+        command.extend(self._maps)
+        command.extend(self._codecs)
+        command.extend(self._output)
+
+        return command
+
+    # =====================================================
+
+    def _build_video_filter(self) -> str:
+
+        return (
+
+            f"[{self._master_index}:v]"
+            "setpts=PTS-STARTPTS[base];"
+
+            f"[{self._logo_index}:v]"
+            "setpts=PTS-STARTPTS[logo];"
+
+            "[base][logo]"
+
+            "overlay=0:0[v]"
+
+        )
 
     # =====================================================
 
     def _build_audio_filter(
         self,
-        timeline: Timeline,
     ) -> str:
         """
         Construit le filtre audio complet.
         """
 
         intro_duration = (
-            timeline.introduction_duration
-            if timeline.introduction_duration is not None
+            self._timeline.introduction_duration
+            if self._timeline.introduction_duration is not None
             else 0.0
         )
 
@@ -130,15 +324,27 @@ class FFmpegRenderer:
         fade_end = intro_duration + self.DUCKING_FADE
 
         return (
+
             "if("
+
             f"lt(t,{intro_duration}),"
+
             f"{self.DUCKING_VOLUME},"
+
             "if("
+
             f"lt(t,{fade_end}),"
+
             f"{self.DUCKING_VOLUME}"
+
             f"+(t-{intro_duration})"
+
             f"*({1-self.DUCKING_VOLUME}"
+
             f"/{self.DUCKING_FADE}),"
+
             "1"
+
             "))"
+
         )
