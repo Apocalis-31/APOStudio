@@ -8,6 +8,8 @@ class FFmpegExecutor:
     Exécute une commande FFmpeg.
     """
 
+    # ==================================================
+
     def __init__(self, ui):
 
         self.ui = ui
@@ -38,7 +40,7 @@ class FFmpegExecutor:
         self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         self.ui.log(f"FFmpeg : {ffmpeg}")
         self.ui.log("")
-        print(full_command)
+
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= (
             subprocess.STARTF_USESHOWWINDOW
@@ -60,24 +62,27 @@ class FFmpegExecutor:
 
             )
 
+            # Vérifie le code retour
+            result.check_returncode()
+
+            # Sortie éventuelle (rare)
             if result.stdout.strip():
 
                 self.ui.log("📤 Sortie FFmpeg")
                 self.ui.log(result.stdout)
 
-            if result.stderr.strip():
-
-                self.ui.log("📤 Journal FFmpeg")
-                self.ui.log(result.stderr)
-
-            result.check_returncode()
-
             self.ui.log("")
-            self.ui.log("✅ Vidéo générée")
+            self.ui.log("✅ Rendu terminé")
 
         except subprocess.CalledProcessError:
 
             self.ui.log("")
             self.ui.log("❌ Le rendu FFmpeg a échoué")
+
+            if result.stderr.strip():
+
+                self.ui.log("")
+                self.ui.log("📤 Journal FFmpeg")
+                self.ui.log(result.stderr)
 
             raise

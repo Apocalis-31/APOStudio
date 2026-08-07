@@ -1,5 +1,6 @@
 from shutil import copy2
 
+
 from assisted_editing.services.episode_storage import EpisodeStorage
 
 
@@ -46,7 +47,14 @@ class ResourcePreparer:
         # Intro
         # ==========================================
 
-        if intro and intro_path is not None:
+        if not intro:
+
+            self._remove_resource(
+                resources_folder,
+                "intro",
+            )
+
+        elif intro_path is not None:
 
             destination = (
                 resources_folder
@@ -74,7 +82,14 @@ class ResourcePreparer:
         # Outro
         # ==========================================
 
-        if outro and outro_path is not None:
+        if not outro:
+
+            self._remove_resource(
+                resources_folder,
+                "outro",
+            )
+
+        elif outro_path is not None:
 
             destination = (
                 resources_folder
@@ -84,7 +99,7 @@ class ResourcePreparer:
             if outro_path.resolve() == destination.resolve():
 
                 self.ui.log(
-                    "   ⏩ Outro déjà présente"
+                    "   ⏩ Outro déjà présent"
                 )
 
             else:
@@ -102,7 +117,14 @@ class ResourcePreparer:
         # Logo
         # ==========================================
 
-        if logo and logo_path is not None:
+        if not logo:
+
+            self._remove_resource(
+                resources_folder,
+                "logo",
+            )
+
+        elif logo_path is not None:
 
             destination = (
                 resources_folder
@@ -130,7 +152,14 @@ class ResourcePreparer:
         # Musique
         # ==========================================
 
-        if music and music_path is not None:
+        if not music:
+
+            self._remove_resource(
+                resources_folder,
+                "music",
+            )
+
+        elif music_path is not None:
 
             destination = (
                 resources_folder
@@ -170,3 +199,29 @@ class ResourcePreparer:
         )
 
         self.ui.log("✅ Ressources préparées")
+
+    # ==================================================
+
+    def _remove_resource(
+        self,
+        resources_folder,
+        name: str,
+    ):
+
+        removed = False
+
+        for file in resources_folder.glob(f"{name}.*"):
+
+            file.unlink()
+
+            removed = True
+
+            self.ui.log(
+                f"   🗑️ {file.name} supprimé"
+            )
+
+        if not removed:
+
+            self.ui.log(
+                f"   ⏩ Aucun {name} à supprimer"
+            )

@@ -1,11 +1,13 @@
 from assisted_editing.models.audio_settings import AudioSettings
 from assisted_editing.services.ffmpeg_executor import FFmpegExecutor
-from assisted_editing.services.ffmpeg_renderer import FFmpegRenderer
 from assisted_editing.services.media_probe import MediaProbe
 from assisted_editing.services.render_job_factory import RenderJobFactory
 from assisted_editing.services.render_validator import RenderValidator
 from assisted_editing.services.resource_preparer import ResourcePreparer
 from assisted_editing.services.timeline_builder import TimelineBuilder
+from assisted_editing.services.rendering_pipeline import (
+    RenderingPipeline,
+)
 
 
 class EditingEngine:
@@ -141,16 +143,19 @@ class EditingEngine:
         )
 
         if render_job.introduction:
+
             self.ui.log(
                 f"Intro   : {render_job.introduction.path.name}"
             )
 
         if render_job.ending:
+
             self.ui.log(
                 f"Outro   : {render_job.ending.path.name}"
             )
 
         if render_job.music:
+
             self.ui.log(
                 f"Musique : {render_job.music.path.name}"
             )
@@ -159,7 +164,7 @@ class EditingEngine:
         self.ui.log("✅ RenderJob valide")
 
         # ==================================================
-        # Paramètres Audio
+        # Paramètres audio
         # ==================================================
 
         audio_settings = AudioSettings(
@@ -179,8 +184,11 @@ class EditingEngine:
         timeline = TimelineBuilder(
             MediaProbe()
         ).build(
+
             render_job,
+
             audio_settings,
+
         )
 
         self.ui.log("")
@@ -242,48 +250,16 @@ class EditingEngine:
             f"Fondu retour : {timeline.audio.fade_duration:.1f}s"
         )
 
+
         # ==================================================
-        # Commande FFmpeg
+        # Rendu
         # ==================================================
 
-        command = FFmpegRenderer().build(
+        RenderingPipeline(
+            self.ui
+        ).render(
             timeline
         )
-
-        self.ui.log("")
-        self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        self.ui.log("⚙️ Commande FFmpeg")
-        self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        self.ui.log("ffmpeg \\")
-
-        for index, argument in enumerate(command):
-
-            if (
-                argument.startswith("-")
-                and index + 1 < len(command)
-                and not command[index + 1].startswith("-")
-            ):
-
-                value = command[index + 1]
-
-                self.ui.log(
-                    f'    {argument} "{value}" \\'
-                )
-
-            elif (
-                index > 0
-                and command[index - 1].startswith("-")
-            ):
-                continue
-
-            else:
-
-                self.ui.log(
-                    f"    {argument} \\"
-                )
-
-        self.ui.log("")
-        self.ui.log("✅ Commande générée")
 
         # ==================================================
         # Exécution

@@ -18,7 +18,82 @@ class MediaProbe:
         media: Path,
     ) -> float:
         """
-        Retourne la durée d'un média en secondes.
+        Retourne la durée d'un média.
+
+        Les images (PNG, JPG, ...) ne possèdent
+        pas de durée. Dans ce cas on retourne 0.0.
+        """
+
+        data = self._probe(media)
+
+        duration = (
+            data
+            .get("format", {})
+            .get("duration")
+        )
+
+        if duration is None:
+            return 0.0
+
+        return float(duration)
+
+    # =====================================================
+
+    def get_fps(
+        self,
+        media: Path,
+    ) -> float:
+        """
+        Retourne le FPS de la première piste vidéo.
+        """
+
+        data = self._probe(media)
+
+        if not data.get("streams"):
+            return 0.0
+
+        stream = data["streams"][0]
+
+        rate = stream.get("r_frame_rate", "0/1")
+
+        numerator, denominator = map(
+            int,
+            rate.split("/")
+        )
+
+        if denominator == 0:
+            return 0.0
+
+        return numerator / denominator
+
+    # =====================================================
+
+    def snap_to_frame(
+        self,
+        media: Path,
+        time: float,
+    ) -> float:
+        """
+        Aligne un temps sur la frame la plus proche.
+        """
+
+        fps = self.get_fps(media)
+
+        if fps <= 0:
+            return time
+
+        frame = round(time * fps)
+
+        return frame / fps
+
+    # =====================================================
+
+    def _probe(
+        self,
+        media: Path,
+    ) -> dict:
+        """
+        Exécute ffprobe et retourne le JSON complet.
         """
 
         ffprobe = (
@@ -45,6 +120,8 @@ class MediaProbe:
 
                 "-show_format",
 
+                "-show_streams",
+
                 str(media),
 
             ],
@@ -61,10 +138,6 @@ class MediaProbe:
 
         )
 
-        data = json.loads(
+        return json.loads(
             result.stdout
-        )
-
-        return float(
-            data["format"]["duration"]
         )
