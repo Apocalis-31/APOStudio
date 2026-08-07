@@ -80,7 +80,7 @@ class RenderingPipeline:
 
         try:
 
-            temp.unlink()
+            #temp.unlink()
 
             self._ui.log("")
             self._ui.log(

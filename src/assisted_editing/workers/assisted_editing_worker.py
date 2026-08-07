@@ -25,6 +25,8 @@ class AssistedEditingWorker(QObject):
         intro_volume,
         vod_volume,
         fade_duration,
+        video_fade_in,
+        video_fade_out,
             ):
         super().__init__()
 
@@ -48,6 +50,8 @@ class AssistedEditingWorker(QObject):
         self.intro_volume = intro_volume
         self.vod_volume = vod_volume
         self.fade_duration = fade_duration
+        self.video_fade_in = video_fade_in
+        self.video_fade_out = video_fade_out
 
     # ==================================================
 
@@ -92,6 +96,9 @@ class AssistedEditingWorker(QObject):
                 intro_volume=self.intro_volume,
                 vod_volume=self.vod_volume,
                 fade_duration=self.fade_duration,
+
+                video_fade_in=self.video_fade_in,
+                video_fade_out=self.video_fade_out,
 
             )
 

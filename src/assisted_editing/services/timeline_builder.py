@@ -2,6 +2,7 @@ from assisted_editing.models.audio_settings import AudioSettings
 from assisted_editing.models.render_job import RenderJob
 from assisted_editing.models.timeline import Timeline
 from assisted_editing.services.media_probe import MediaProbe
+from assisted_editing.models.video_settings import VideoSettings
 
 
 class TimelineBuilder:
@@ -22,6 +23,7 @@ class TimelineBuilder:
         self,
         render_job: RenderJob,
         audio_settings: AudioSettings,
+        video_settings: VideoSettings,
     ) -> Timeline:
 
         timeline = Timeline(
@@ -44,10 +46,17 @@ class TimelineBuilder:
         # ==================================================
 
         timeline.audio = audio_settings
+        timeline.video = video_settings
 
         # ==================================================
         # Durées
         # ==================================================
+
+        timeline.master_duration = (
+            self._probe.get_duration(
+                timeline.master_video
+            )
+        )
 
         if timeline.introduction:
 
@@ -65,4 +74,19 @@ class TimelineBuilder:
                 )
             )
 
+        if timeline.ending:
+
+            timeline.ending_duration = (
+                self._probe.get_duration(
+                    timeline.ending.path
+                )
+            )
+
+        if timeline.music:
+
+            timeline.music_duration = (
+                self._probe.get_duration(
+                    timeline.music.path
+                )
+            )
         return timeline

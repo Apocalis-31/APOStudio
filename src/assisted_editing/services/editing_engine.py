@@ -1,3 +1,5 @@
+from assisted_editing.models import timeline
+from assisted_editing.models.video_settings import VideoSettings
 from assisted_editing.models.audio_settings import AudioSettings
 from assisted_editing.services.ffmpeg_executor import FFmpegExecutor
 from assisted_editing.services.media_probe import MediaProbe
@@ -39,6 +41,9 @@ class EditingEngine:
         intro_volume=1.0,
         vod_volume=0.10,
         fade_duration=1.5,
+
+        video_fade_in=1.5,
+        video_fade_out=1.5,
     ):
 
         # ==================================================
@@ -177,6 +182,13 @@ class EditingEngine:
 
         )
 
+        video_settings = VideoSettings(
+
+            fade_in=video_fade_in,
+            fade_out=video_fade_out,
+
+        )
+
         # ==================================================
         # Timeline
         # ==================================================
@@ -188,7 +200,7 @@ class EditingEngine:
             render_job,
 
             audio_settings,
-
+            video_settings,
         )
 
         self.ui.log("")
@@ -254,6 +266,18 @@ class EditingEngine:
         # ==================================================
         # Rendu
         # ==================================================
+        self.ui.log("")
+        self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        self.ui.log("🎬 Paramètres Vidéo")
+        self.ui.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        self.ui.log(
+            f"Fade In  : {timeline.video.fade_in:.1f}s"
+        )
+
+        self.ui.log(
+            f"Fade Out : {timeline.video.fade_out:.1f}s"
+        )
 
         RenderingPipeline(
             self.ui
@@ -261,12 +285,3 @@ class EditingEngine:
             timeline
         )
 
-        # ==================================================
-        # Exécution
-        # ==================================================
-
-        FFmpegExecutor(
-            self.ui
-        ).execute(
-            command
-        )

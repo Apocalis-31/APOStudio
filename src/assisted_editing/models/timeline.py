@@ -3,6 +3,7 @@ from pathlib import Path
 
 from assisted_editing.models.audio_settings import AudioSettings
 from assisted_editing.models.resource import Resource
+from assisted_editing.models.video_settings import VideoSettings
 
 
 @dataclass(slots=True)
@@ -38,8 +39,15 @@ class Timeline:
     # Informations calculées
     # ==================================================
 
+    master_duration: float | None = None
+
     introduction_duration: float | None = None
+
     logo_duration: float | None = None
+
+    ending_duration: float | None = None
+
+    music_duration: float | None = None
 
     # ==================================================
     # Paramètres audio
@@ -47,4 +55,12 @@ class Timeline:
 
     audio: AudioSettings = field(
         default_factory=AudioSettings
+    )
+
+    # ==================================================
+    # Paramètres vidéo
+    # ==================================================
+
+    video: VideoSettings = field(
+        default_factory=VideoSettings
     )

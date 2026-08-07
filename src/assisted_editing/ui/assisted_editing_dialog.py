@@ -12,9 +12,13 @@ from PySide6.QtWidgets import (
     QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
+    QFrame,
+    QSlider,
 )
 
+from assisted_editing.models.editing_queue_item import EditingQueueItem
 from assisted_editing.services.editing_engine import EditingEngine
+from assisted_editing.services.editing_queue import EditingQueue
 from assisted_editing.services.episode_repository import EpisodeRepository
 from assisted_editing.workers.assisted_editing_worker import AssistedEditingWorker
 from PySide6.QtWidgets import QSlider
@@ -35,11 +39,13 @@ class AssistedEditingDialog(QDialog):
         self.outro_path = None
         self.logo_path = None
         self.music_path = None
+        
 
         self.setObjectName("Dialog")
         self.setWindowTitle("Montage Assisté")
         self.setMinimumWidth(1150)
         self.setMinimumHeight(760)
+        self.queue = EditingQueue()
 
         layout = QVBoxLayout(self)
 
@@ -75,8 +81,7 @@ class AssistedEditingDialog(QDialog):
         # ==================================================
 
         content = QHBoxLayout()
-
-        content.setSpacing(20)
+        content.setSpacing(15)
 
         layout.addLayout(
             content,
@@ -84,28 +89,83 @@ class AssistedEditingDialog(QDialog):
         )
 
         # ==================================================
-        # Colonne gauche
+        # Panel Ressources
         # ==================================================
 
-        left_column = QVBoxLayout()
+        resources_frame = QFrame()
+        resources_frame.setObjectName(
+            "Panel"
+        )
+        resources_frame.setFixedWidth(250)
 
-        left_column.setSpacing(15)
+        resources_layout = QVBoxLayout(
+            resources_frame
+        )
 
-        content.addLayout(
-            left_column,
-            0,
+        resources_layout.setContentsMargins(
+            15,
+            15,
+            15,
+            15,
+        )
+
+        resources_layout.setSpacing(12)
+
+        content.addWidget(
+            resources_frame
         )
 
         # ==================================================
-        # Colonne droite
+        # Panel Paramètres
         # ==================================================
 
-        right_column = QVBoxLayout()
+        settings_frame = QFrame()
+        settings_frame.setObjectName(
+            "Panel"
+        )
+        settings_frame.setFixedWidth(260)
 
-        right_column.setSpacing(15)
+        settings_layout = QVBoxLayout(
+            settings_frame
+        )
 
-        content.addLayout(
-            right_column,
+        settings_layout.setContentsMargins(
+            15,
+            15,
+            15,
+            15,
+        )
+
+        settings_layout.setSpacing(12)
+
+        content.addWidget(
+            settings_frame
+        )
+
+        # ==================================================
+        # Panel Episodes
+        # ==================================================
+
+        episodes_frame = QFrame()
+        episodes_frame.setObjectName(
+            "Panel"
+        )
+
+        episodes_layout = QVBoxLayout(
+            episodes_frame
+        )
+
+        episodes_layout.setContentsMargins(
+            15,
+            15,
+            15,
+            15,
+        )
+
+        episodes_layout.setSpacing(12)
+
+        content.addWidget(
+            episodes_frame,
             1,
         )
         # ==================================================
@@ -115,7 +175,7 @@ class AssistedEditingDialog(QDialog):
         section = QLabel("📺 EPISODES À PRÉPARER")
         section.setObjectName("DialogSection")
 
-        right_column.addWidget(section)
+        episodes_layout.addWidget(section)
 
         self.episode_tree = QTreeWidget()
 
@@ -128,7 +188,7 @@ class AssistedEditingDialog(QDialog):
             QAbstractItemView.SelectionMode.SingleSelection
         )
 
-        right_column.addWidget(
+        episodes_layout.addWidget(
             self.episode_tree,
             1,
         )
@@ -141,13 +201,8 @@ class AssistedEditingDialog(QDialog):
         section = QLabel("📦 RESSOURCES")
         section.setObjectName("DialogSection")
 
-        left_column.addWidget(section)
+        resources_layout.addWidget(section)
 
-        resources_layout = QVBoxLayout()
-
-        resources_layout.setSpacing(12)
-
-        left_column.addLayout(resources_layout)
 
         # ==================================================
         # Audio
@@ -156,13 +211,13 @@ class AssistedEditingDialog(QDialog):
         section = QLabel("🎵 AUDIO")
         section.setObjectName("DialogSection")
 
-        left_column.addWidget(section)
+        settings_layout.addWidget(section)
 
         audio_layout = QVBoxLayout()
 
         audio_layout.setSpacing(12)
 
-        left_column.addLayout(audio_layout)
+        settings_layout.addLayout(audio_layout)
 
         # ==================================================
         # Volume Intro
@@ -287,6 +342,99 @@ class AssistedEditingDialog(QDialog):
             self.fade_value)
 
         # ==================================================
+        # Vidéo
+        # ==================================================
+
+        section = QLabel("🎬 VIDÉO")
+        section.setObjectName("DialogSection")
+
+        settings_layout.addWidget(section)
+
+        video_layout = QVBoxLayout()
+
+        settings_layout.addLayout(video_layout)
+
+        # ==================================================
+        # Fade In
+        # ==================================================
+
+        self.video_fade_in_title = QLabel(
+            "Fondu d'entrée"
+        )
+
+        video_layout.addWidget(
+            self.video_fade_in_title
+        )
+
+        self.video_fade_in_slider = QSlider(
+            Qt.Orientation.Horizontal
+        )
+
+        self.video_fade_in_slider.setRange(
+            0,
+            50,
+        )
+
+        self.video_fade_in_slider.setValue(
+            20,
+        )
+
+        video_layout.addWidget(
+            self.video_fade_in_slider
+        )
+
+        self.video_fade_in_value = QLabel(
+            "2.0 s"
+        )
+
+        self.video_fade_in_value.setAlignment(
+            Qt.AlignmentFlag.AlignRight
+        )
+
+        video_layout.addWidget(
+            self.video_fade_in_value)
+
+        # ==================================================
+        # Fade Out
+        # ==================================================
+
+        self.video_fade_out_title = QLabel(
+            "Fondu de sortie"
+        )
+
+        video_layout.addWidget(
+            self.video_fade_out_title
+        )
+
+        self.video_fade_out_slider = QSlider(
+            Qt.Orientation.Horizontal
+        )
+
+        self.video_fade_out_slider.setRange(
+            0,
+            50,
+        )
+
+        self.video_fade_out_slider.setValue(
+            25,
+        )
+
+        video_layout.addWidget(
+            self.video_fade_out_slider
+        )
+
+        self.video_fade_out_value = QLabel(
+            "2.5 s"
+        )
+
+        self.video_fade_out_value.setAlignment(
+            Qt.AlignmentFlag.AlignRight
+        )
+
+        video_layout.addWidget(
+            self.video_fade_out_value)
+
+        # ==================================================
         # Mise à jour des labels
         # ==================================================
 
@@ -312,6 +460,24 @@ class AssistedEditingDialog(QDialog):
 
             lambda value:
             self.fade_value.setText(
+                f"{value / 10:.1f} s"
+            )
+
+        )
+
+        self.video_fade_in_slider.valueChanged.connect(
+
+            lambda value:
+            self.video_fade_in_value.setText(
+                f"{value / 10:.1f} s"
+            )
+
+        )
+
+        self.video_fade_out_slider.valueChanged.connect(
+
+            lambda value:
+            self.video_fade_out_value.setText(
                 f"{value / 10:.1f} s"
             )
 
@@ -459,7 +625,7 @@ class AssistedEditingDialog(QDialog):
 
         resources_layout.addWidget(self.overlay)
 
-        layout.addStretch()
+        resources_layout.addStretch()
 
         # ==================================================
         # Boutons
@@ -647,6 +813,21 @@ class AssistedEditingDialog(QDialog):
 
         self.prepare_button.setEnabled(False)
         self.prepare_button.setText("Préparation...")
+        item = self._create_queue_item()
+
+        self.queue.add(item)
+
+        print("===================================")
+        print(f"Queue : {self.queue.count()} élément(s)")
+
+        for job in self.queue.items():
+
+            print(job.episode.project_name)
+            print(job.episode.episode_number)
+            print(job.intro_path)
+            print(job.logo_path)
+
+        print("===================================")
 
         self.worker = AssistedEditingWorker(
 
@@ -683,6 +864,16 @@ class AssistedEditingDialog(QDialog):
                 / 10
             ),
 
+            video_fade_in=(
+                self.video_fade_in_slider.value()
+                / 10
+            ),
+
+            video_fade_out=(
+                self.video_fade_out_slider.value()
+                / 10
+            ),
+
         )
 
         self.worker.finished.connect(
@@ -691,7 +882,82 @@ class AssistedEditingDialog(QDialog):
 
         self.worker.start()
 
+
     # ==================================================
+
+    def _create_queue_item(self):
+
+        item = self.episode_tree.currentItem()
+
+        if item is None:
+            return None
+
+        episode = item.data(
+            0,
+            Qt.ItemDataRole.UserRole,
+        )
+
+        if episode is None:
+            return None
+
+        if episode is None:
+            return None
+
+        return EditingQueueItem(
+
+            # ==========================================
+            # Episode
+            # ==========================================
+
+            episode=episode,
+
+            # ==========================================
+            # Ressources
+            # ==========================================
+
+            intro=self.intro.isChecked(),
+            intro_path=self.intro_path,
+
+            outro=self.outro.isChecked(),
+            outro_path=self.outro_path,
+
+            logo=self.logo.isChecked(),
+            logo_path=self.logo_path,
+
+            overlay=self.overlay.isChecked(),
+
+            music=self.music.isChecked(),
+            music_path=self.music_path,
+
+            # ==========================================
+            # Audio
+            # ==========================================
+
+            intro_volume=(
+                self.intro_volume_slider.value() / 100
+            ),
+
+            vod_volume=(
+                self.vod_volume_slider.value() / 100
+            ),
+
+            fade_duration=(
+                self.fade_slider.value() / 10
+            ),
+
+            # ==========================================
+            # Vidéo
+            # ==========================================
+
+            video_fade_in=(
+                self.video_fade_in_slider.value() / 10
+            ),
+
+            video_fade_out=(
+                self.video_fade_out_slider.value() / 10
+            ),
+
+        )
 
     def _prepare_finished(
         self,
