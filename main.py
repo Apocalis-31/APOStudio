@@ -19,6 +19,8 @@ SRC_DIR = os.path.join(BASE_DIR, "src")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
+from app_info import VERSION
+
 from PySide6.QtCore import QObject, QRectF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QIcon, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
@@ -410,7 +412,7 @@ class MainWindow(QMainWindow):
     def __init__(self, scale=None):
         super().__init__()
         self._scale = scale if scale is not None else _screen_scale()
-        self.setWindowTitle("APO Studio 2.0")
+        self.setWindowTitle(f"APO Studio {VERSION}")
         # Taille par défaut précédente (rollback) : 800 x 520, mise à l'échelle.
         self._rollback_size = QSize(
             int(800 * self._scale),
@@ -2116,7 +2118,7 @@ def main():
     window = MainWindow(scale=scale)
     window.show()
 
-    window._log("🚀 APO Studio 2.0 démarré")
+    window._log(f"🚀 APO Studio {VERSION} démarré")
     window._log("Console prête — les journaux du pipeline s'affichent ici.")
 
     if PIPELINE_OK:
