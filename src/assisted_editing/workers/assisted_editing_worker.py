@@ -1,5 +1,4 @@
-from PySide6.QtCore import QObject, Signal
-import threading
+from PySide6.QtCore import QObject, Signal, Slot
 import traceback
 
 from assisted_editing.services.editing_engine import EditingEngine
@@ -8,6 +7,8 @@ from assisted_editing.services.editing_engine import EditingEngine
 class AssistedEditingWorker(QObject):
 
     finished = Signal(bool)
+
+    # ==================================================
 
     def __init__(
         self,
@@ -27,7 +28,7 @@ class AssistedEditingWorker(QObject):
         fade_duration,
         video_fade_in,
         video_fade_out,
-            ):
+    ):
         super().__init__()
 
         self.ui = ui
@@ -50,23 +51,13 @@ class AssistedEditingWorker(QObject):
         self.intro_volume = intro_volume
         self.vod_volume = vod_volume
         self.fade_duration = fade_duration
+
         self.video_fade_in = video_fade_in
         self.video_fade_out = video_fade_out
 
     # ==================================================
 
-    def start(self):
-
-        threading.Thread(
-
-            target=self.run,
-
-            daemon=True,
-
-        ).start()
-
-    # ==================================================
-
+    @Slot()
     def run(self):
 
         success = False
@@ -109,8 +100,18 @@ class AssistedEditingWorker(QObject):
             traceback.print_exc()
 
             self.ui.log("")
-            self.ui.log("❌ Le montage assisté a échoué.")
+            self.ui.log(
+                "❌ Le montage assisté a échoué."
+            )
 
         finally:
 
+            print(
+                f">>> Worker terminé - émission finished({success})"
+            )
+
             self.finished.emit(success)
+
+            print(
+                ">>> Signal finished émis"
+            )

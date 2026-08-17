@@ -123,11 +123,35 @@ class RenderJobFactory:
 
         if subtitle:
 
-            return (
+            filename = (
                 f"{episode.master_video.stem}"
-                f" - {subtitle}.mp4"
+                f" - {subtitle}"
+            )
+
+        else:
+
+            filename = (
+                f"{episode.master_video.stem}"
             )
 
         return (
-            f"{episode.master_video.stem}.mp4"
+            f"{self._sanitize_filename(filename)}.mp4"
         )
+
+    # ==================================================
+
+    def _sanitize_filename(
+        self,
+        filename: str,
+    ) -> str:
+
+        invalid_characters = '<>:"/\\|?*'
+
+        for character in invalid_characters:
+
+            filename = filename.replace(
+                character,
+                "",
+            )
+
+        return filename.strip()

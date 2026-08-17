@@ -59,6 +59,9 @@ try:
     from workers.transcription_worker import TranscriptionWorker
     from assisted_editing.ui.assisted_editing_dialog import AssistedEditingDialog
     from services.smart_cut.transcript_loader import TranscriptLoader
+    from assisted_editing.services.assisted_editing_manager import (
+        AssistedEditingManager,
+    )
 
     PIPELINE_OK = True
     PIPELINE_ERROR = None
@@ -167,6 +170,7 @@ class UiBridge(QObject):
     update_done_signal = Signal(object)
     smart_cut_started_signal = Signal()
     smart_cut_finished_signal = Signal()
+    smart_cut_prepared_signal = Signal(object, bool)
 
     def __init__(self):
         super().__init__()
@@ -437,9 +441,23 @@ class MainWindow(QMainWindow):
             self.setWindowIcon(QIcon(str(icon_path)))
 
         self.bridge = UiBridge()
+
+        self.assisted_editing_manager = (
+            AssistedEditingManager(
+                self.bridge,
+                self,
+            )
+        )
+
         self.statistics = SessionStatistics()
         self.queue_manager = QueueManager(self.bridge) if PIPELINE_OK else None
         self.config = ConfigService() if PIPELINE_OK else None
+
+        self.assisted_editing_manager = (
+            AssistedEditingManager(self.bridge)
+            if PIPELINE_OK
+            else None
+        )
 
         self._session_start = None
         self._step_state = {key: "wait" for key in STEPS}
@@ -675,6 +693,23 @@ class MainWindow(QMainWindow):
             session_layout.addLayout(row)
             self.session_values[key] = value_label
 
+        # --- Montage assisté ---
+        self.assisted_card, assisted_layout = _card()
+
+        assisted_title = QLabel("🎬 Montage assisté")
+        assisted_title.setObjectName("CardTitle")
+        assisted_layout.addWidget(assisted_title)
+
+        self.assisted_count = QLabel("Aucun montage en cours")
+        self.assisted_count.setObjectName("SessionValue")
+        assisted_layout.addWidget(self.assisted_count)
+
+        self.assisted_eta = QLabel("⏳ —")
+        self.assisted_eta.setObjectName("SessionValue")
+        assisted_layout.addWidget(self.assisted_eta)
+
+        assisted_layout.addStretch(1)
+
         self._rebuild_session_row()
         layout.addWidget(self._session_row)
 
@@ -735,15 +770,39 @@ class MainWindow(QMainWindow):
             self._session_row_layout.setAlignment(
                 Qt.AlignmentFlag.AlignTop
             )
+
             self.ring.setMinimumHeight(150)
             self.ring.setMaximumHeight(220)
-            self._session_row_layout.addWidget(self.ring_card)
-            self._session_row_layout.addWidget(self.session_card, 1)
+
+            self._session_row_layout.addWidget(
+                self.ring_card
+            )
+
+            self._session_row_layout.addWidget(
+                self.session_card,
+                1,
+            )
+
+            self._session_row_layout.addWidget(
+                self.assisted_card,
+                1,
+            )
+
         else:
             self.ring.setMinimumHeight(150)
             self.ring.setMaximumHeight(240)
-            self._session_row_layout.addWidget(self.ring_card)
-            self._session_row_layout.addWidget(self.session_card)
+
+            self._session_row_layout.addWidget(
+                self.ring_card
+            )
+
+            self._session_row_layout.addWidget(
+                self.session_card
+            )
+
+            self._session_row_layout.addWidget(
+                self.assisted_card
+            )
 
     def resizeEvent(self, event):
         self._rebuild_session_row()
@@ -953,11 +1012,22 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def _open_tools(self):
-        dialog = ToolsDialog(
+
+        if hasattr(self, "tools_dialog") and self.tools_dialog is not None:
+            self.tools_dialog.show()
+            self.tools_dialog.raise_()
+            self.tools_dialog.activateWindow()
+            return
+
+        self.tools_dialog = ToolsDialog(
             self.bridge,
+            self.assisted_editing_manager,
             self,
-        )        
-        dialog.exec()
+        )
+
+        self.tools_dialog.show()
+        self.tools_dialog.raise_()
+        self.tools_dialog.activateWindow()
 
     def _open_help(self):
         dialog = HelpDialog(self)
@@ -1264,6 +1334,90 @@ class MainWindow(QMainWindow):
             end.strftime("%H:%M") if end else "—"
         )
 
+    def _refresh_assisted_display(self):
+        manager = getattr(
+            self,
+            "assisted_editing_manager",
+            None,
+        )
+
+        if manager is None:
+            self.assisted_count.setText(
+                "Aucun montage en cours"
+            )
+            self.assisted_eta.setText("⏳ —")
+            return
+
+        try:
+            count = manager.remaining_count()
+
+            if count <= 0:
+                self.assisted_count.setText(
+                    "Aucun montage en cours"
+                )
+                self.assisted_eta.setText("⏳ —")
+                return
+
+            self.assisted_count.setText(
+                f"🔧 {count} montage(s)"
+            )
+
+            remaining = manager.estimated_remaining()
+
+            if remaining is None:
+                self.assisted_eta.setText(
+                    "⏳ Calcul en cours..."
+                )
+            else:
+                self.assisted_eta.setText(
+                    f"⏳ ~ {_fmt_dur(remaining)}"
+                )
+
+        except Exception:
+            self.assisted_count.setText(
+                "Aucun montage en cours"
+            )
+            self.assisted_eta.setText("⏳ —")
+
+    def _refresh_assisted_display(self):
+
+        manager = getattr(
+            self,
+            "assisted_editing_manager",
+            None,
+        )
+
+        if manager is None:
+            self.assisted_count.setText(
+                "Aucun montage en cours"
+            )
+            self.assisted_eta.setText("⏳ —")
+            return
+
+        count = manager.remaining_count()
+
+        if count <= 0:
+            self.assisted_count.setText(
+                "Aucun montage en cours"
+            )
+            self.assisted_eta.setText("⏳ —")
+            return
+
+        self.assisted_count.setText(
+            f"🔧 {count} montage(s)"
+        )
+
+        remaining = manager.estimated_remaining()
+
+        if remaining is None:
+            self.assisted_eta.setText(
+                "⏳ Calcul en cours..."
+            )
+        else:
+            self.assisted_eta.setText(
+                f"⏳ ~ {_fmt_dur(remaining)}"
+            )
+
     def _reset_session_display(self):
         for key in self.session_values:
             self.session_values[key].setText("—")
@@ -1274,6 +1428,8 @@ class MainWindow(QMainWindow):
         self._render_tasks()
 
     def _on_timer(self):
+
+        self._refresh_assisted_display()
         if self._session_start is None:
             return
         elapsed = time.time() - self._session_start
@@ -1286,6 +1442,7 @@ class MainWindow(QMainWindow):
         )
         self._update_ring_progress()
         self._refresh_session_statistics()
+        self._refresh_assisted_display()
 
     def _switch_tab(self):
         to_traitement = self.sender() is self.tab_traitement
@@ -1749,7 +1906,7 @@ class SmartCutDialog(QDialog):
 
         layout.addWidget(self._field_label("PREMIER ÉPISODE"))
         next_episode = project.next_episode
-        self.first_episode = QLineEdit(str((next_episode or 0) + 1))
+        self.first_episode = QLineEdit(str(next_episode or 1))
         layout.addWidget(self.first_episode)
 
         self.rename = QCheckBox("Renommer automatiquement")
@@ -1892,9 +2049,14 @@ class ToolsDialog(QDialog):
     def __init__(
         self,
         ui,
+        assisted_editing_manager,
         parent=None,
-    ):        
+    ):
         super().__init__(parent)
+
+        self.assisted_editing_manager = (
+            assisted_editing_manager
+        )
         self.setObjectName("Dialog")
         self.setWindowTitle("Outils - APO Studio")
         self.setMinimumWidth(480)
@@ -1998,7 +2160,10 @@ class ToolsDialog(QDialog):
             Qt.AlignmentFlag.AlignRight,
         )
 
-        self.prepared.connect(self._on_prepared)
+        self.ui.smart_cut_prepared_signal.connect(
+            self._on_prepared,
+            Qt.ConnectionType.QueuedConnection,
+        )
 
     # ==================================================
 
@@ -2041,7 +2206,12 @@ class ToolsDialog(QDialog):
 
             project = VideoResolver(bridge).resolve(video)
 
-            self.prepared.emit(project, False)
+            self.ui.smart_cut_prepared_signal.emit(
+                project,
+                False,
+            )
+
+            print(">>> _on_prepared programmé")
 
         TranscriptionWorker(
             video,
@@ -2053,6 +2223,10 @@ class ToolsDialog(QDialog):
 
 
     def _on_prepared(self, project, cancelled):
+
+        print(">>> _on_prepared appelé")
+        print(f">>> cancelled = {cancelled}")
+        print(f">>> project = {project}")
 
         self.launch_button.setEnabled(True)
         self.status.setText("")
@@ -2083,8 +2257,12 @@ class ToolsDialog(QDialog):
 
     def _launch_assisted_editing(self):
 
+        if self.assisted_editing_manager is None:
+            return
+
         AssistedEditingDialog(
             self.ui,
+            self.assisted_editing_manager,
             self,
         ).exec()
 # ============================================================

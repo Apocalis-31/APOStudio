@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -17,11 +17,9 @@ from PySide6.QtWidgets import (
 )
 
 from assisted_editing.models.editing_queue_item import EditingQueueItem
-from assisted_editing.services.editing_engine import EditingEngine
-from assisted_editing.services.editing_queue import EditingQueue
 from assisted_editing.services.episode_repository import EpisodeRepository
-from assisted_editing.workers.assisted_editing_worker import AssistedEditingWorker
 from PySide6.QtWidgets import QSlider
+from PySide6.QtCore import Qt
 
 
 class AssistedEditingDialog(QDialog):
@@ -29,12 +27,16 @@ class AssistedEditingDialog(QDialog):
     def __init__(
         self,
         ui,
+        manager,
         parent=None,
     ):
         super().__init__(parent)
 
         self.ui = ui
-
+        self.manager = manager
+        self.manager.all_finished.connect(
+            self._on_all_finished
+        )
         self.intro_path = None
         self.outro_path = None
         self.logo_path = None
@@ -45,7 +47,6 @@ class AssistedEditingDialog(QDialog):
         self.setWindowTitle("Montage Assisté")
         self.setMinimumWidth(1150)
         self.setMinimumHeight(760)
-        self.queue = EditingQueue()
 
         layout = QVBoxLayout(self)
 
@@ -798,89 +799,19 @@ class AssistedEditingDialog(QDialog):
 
     def _prepare_episode(self):
 
-        item = self.episode_tree.currentItem()
+        queue_item = self._create_queue_item()
 
-        if item is None:
+        if queue_item is None:
             return
 
-        episode = item.data(
-            0,
-            Qt.ItemDataRole.UserRole,
+        self.manager.enqueue(
+            queue_item
         )
 
-        if episode is None:
-            return
-
-        self.prepare_button.setEnabled(False)
-        self.prepare_button.setText("Préparation...")
-        item = self._create_queue_item()
-
-        self.queue.add(item)
-
-        print("===================================")
-        print(f"Queue : {self.queue.count()} élément(s)")
-
-        for job in self.queue.items():
-
-            print(job.episode.project_name)
-            print(job.episode.episode_number)
-            print(job.intro_path)
-            print(job.logo_path)
-
-        print("===================================")
-
-        self.worker = AssistedEditingWorker(
-
-            ui=self.ui,
-
-            episode=episode,
-
-            intro=self.intro.isChecked(),
-            intro_path=self.intro_path,
-
-            outro=self.outro.isChecked(),
-            outro_path=self.outro_path,
-
-            logo=self.logo.isChecked(),
-            logo_path=self.logo_path,
-
-            overlay=self.overlay.isChecked(),
-
-            music=self.music.isChecked(),
-            music_path=self.music_path,
-
-            intro_volume=(
-                self.intro_volume_slider.value()
-                / 100
-            ),
-
-            vod_volume=(
-                self.vod_volume_slider.value()
-                / 100
-            ),
-
-            fade_duration=(
-                self.fade_slider.value()
-                / 10
-            ),
-
-            video_fade_in=(
-                self.video_fade_in_slider.value()
-                / 10
-            ),
-
-            video_fade_out=(
-                self.video_fade_out_slider.value()
-                / 10
-            ),
-
+        self.prepare_button.setEnabled(True)
+        self.prepare_button.setText(
+            "Ajouter un épisode"
         )
-
-        self.worker.finished.connect(
-            self._prepare_finished
-        )
-
-        self.worker.start()
 
 
     # ==================================================
@@ -959,17 +890,10 @@ class AssistedEditingDialog(QDialog):
 
         )
 
-    def _prepare_finished(
-        self,
-        success: bool,
-    ):
+
+    def _on_all_finished(self):
 
         self.prepare_button.setEnabled(True)
-
         self.prepare_button.setText(
             "Préparer"
         )
-
-        if success:
-
-            self.accept()
