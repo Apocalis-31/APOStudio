@@ -7,7 +7,6 @@ from pathlib import Path
 import math
 import traceback
 
-
 if getattr(sys, "frozen", False):
     _exe_dir = os.path.dirname(os.path.abspath(sys.executable))
     _internal = os.path.join(_exe_dir, "_internal")
@@ -62,6 +61,7 @@ try:
     from assisted_editing.services.assisted_editing_manager import (
         AssistedEditingManager,
     )
+    from services.license_manager import LicenseManager
 
     PIPELINE_OK = True
     PIPELINE_ERROR = None
@@ -452,6 +452,7 @@ class MainWindow(QMainWindow):
         self.statistics = SessionStatistics()
         self.queue_manager = QueueManager(self.bridge) if PIPELINE_OK else None
         self.config = ConfigService() if PIPELINE_OK else None
+        self.license_manager = LicenseManager(self.config)
 
         self.assisted_editing_manager = (
             AssistedEditingManager(self.bridge)
@@ -999,7 +1000,11 @@ class MainWindow(QMainWindow):
             self._log(f"❌ Impossible d'ouvrir le dossier projets : {exc}")
 
     def _open_settings(self):
-        dialog = SettingsDialog(self.config, self)
+        dialog = SettingsDialog(
+            self.config,
+            self.license_manager,
+            self,
+        )
         dialog.saved.connect(self._refresh_model_card)
         dialog.exec()
 
@@ -1022,6 +1027,7 @@ class MainWindow(QMainWindow):
         self.tools_dialog = ToolsDialog(
             self.bridge,
             self.assisted_editing_manager,
+            self.license_manager,
             self,
         )
 
@@ -1485,13 +1491,18 @@ class SettingsDialog(QDialog):
         "lmstudio": [],
     }
 
-    def __init__(self, config, parent=None):
+    def __init__(
+                self,
+                config,
+                license_manager,
+                parent=None,
+            ):
         super().__init__(parent)
         self.setObjectName("Dialog")
         self.setWindowTitle("Réglages")
         self.setMinimumWidth(440)
         self.config = config
-
+        self.license_manager = license_manager
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(12)
@@ -1525,6 +1536,57 @@ class SettingsDialog(QDialog):
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("Optionnel — pour Ollama / LM Studio")
         layout.addWidget(self.url_input)
+
+        # ==================================================
+        # Licence APO Studio
+        # ==================================================
+
+        layout.addWidget(
+            self._section("🔐 LICENCE APO STUDIO")
+        )
+
+        self.license_status = QLabel()
+
+        if self.license_manager.is_beta():
+            self.license_status.setText(
+                "🟢 Accès Beta Tester activé"
+            )
+        elif self.license_manager.is_premium():
+            self.license_status.setText(
+                "🟢 APO Studio Premium"
+            )
+        else:
+            self.license_status.setText(
+                "🟡 Version Community"
+            )
+
+        layout.addWidget(self.license_status)
+
+        self.license_code_input = QLineEdit()
+        self.license_code_input.setPlaceholderText(
+            "Code d'accès bêta"
+        )
+        layout.addWidget(self.license_code_input)
+
+        self.license_activate_button = QPushButton(
+            "Activer le code"
+        )
+        self.license_activate_button.setObjectName(
+            "PrimaryButton"
+        )
+        self.license_activate_button.setCursor(
+            Qt.CursorShape.PointingHandCursor
+        )
+
+        self.license_activate_button.clicked.connect(
+            self._activate_license
+        )
+
+        layout.addWidget(
+            self.license_activate_button,
+            0,
+            Qt.AlignmentFlag.AlignRight,
+        )
 
         buttons = QHBoxLayout()
         buttons.setSpacing(10)
@@ -1596,6 +1658,45 @@ class SettingsDialog(QDialog):
         self.config.save()
         self.saved.emit()
         self.accept()
+
+    def _activate_license(self):
+
+        code = (
+            self.license_code_input
+            .text()
+            .strip()
+        )
+
+        if not code:
+            QMessageBox.warning(
+                self,
+                "Code manquant",
+                "Veuillez entrer un code d'accès.",
+            )
+            return
+
+        if self.license_manager.activate_code(code):
+
+            self.license_status.setText(
+                "🟢 Accès Beta Tester activé"
+            )
+
+            self.license_code_input.clear()
+
+            QMessageBox.information(
+                self,
+                "Activation réussie",
+                "Votre accès Beta Tester est maintenant activé.\n\n"
+                "Les fonctionnalités Premium sont débloquées.",
+            )
+
+        else:
+
+            QMessageBox.warning(
+                self,
+                "Code invalide",
+                "Ce code d'accès n'est pas valide.",
+            )
 
 
 class HelpDialog(QDialog):
@@ -1742,6 +1843,45 @@ class WorkflowDialog(QDialog):
         workflow.enabled = enabled
         self.workflow_config.save(workflow)
         self.accept()
+
+    def _activate_license(self):
+
+        code = (
+            self.license_code_input
+            .text()
+            .strip()
+        )
+
+        if not code:
+            QMessageBox.warning(
+                self,
+                "Code manquant",
+                "Veuillez entrer un code d'accès.",
+            )
+            return
+
+        if self.license_manager.activate_code(code):
+
+            self.license_status.setText(
+                "🟢 Accès Beta Tester activé"
+            )
+
+            self.license_code_input.clear()
+
+            QMessageBox.information(
+                self,
+                "Activation réussie",
+                "Votre accès Beta Tester est maintenant activé.\n\n"
+                "Les fonctionnalités Premium sont débloquées.",
+            )
+
+        else:
+
+            QMessageBox.warning(
+                self,
+                "Code invalide",
+                "Ce code d'accès n'est pas valide.",
+            )
 
 
 class AIStyleDialog(QDialog):
@@ -2050,6 +2190,7 @@ class ToolsDialog(QDialog):
         self,
         ui,
         assisted_editing_manager,
+        license_manager,
         parent=None,
     ):
         super().__init__(parent)
@@ -2057,6 +2198,7 @@ class ToolsDialog(QDialog):
         self.assisted_editing_manager = (
             assisted_editing_manager
         )
+        self.license_manager = license_manager
         self.setObjectName("Dialog")
         self.setWindowTitle("Outils - APO Studio")
         self.setMinimumWidth(480)
@@ -2169,6 +2311,12 @@ class ToolsDialog(QDialog):
 
     def _launch_smart_cut(self):
 
+        if not self.license_manager.has_access(
+            "smart_cut"
+        ):
+            self._show_license_required()
+            return
+
         video, _ = QFileDialog.getOpenFileName(
             self,
             "Choisir une VOD",
@@ -2257,6 +2405,12 @@ class ToolsDialog(QDialog):
 
     def _launch_assisted_editing(self):
 
+        if not self.license_manager.has_access(
+            "assisted_editing"
+        ):
+            self._show_license_required()
+            return
+
         if self.assisted_editing_manager is None:
             return
 
@@ -2268,6 +2422,17 @@ class ToolsDialog(QDialog):
 # ============================================================
 # Démarrage
 # ============================================================
+
+    def _show_license_required(self):
+
+        QMessageBox.information(
+            self,
+            "Fonctionnalité Premium",
+            "Cette fonctionnalité nécessite "
+            "un accès Beta Tester ou APO Studio Premium.\n\n"
+            "Vous pouvez activer un code bêta "
+            "depuis les Réglages.",
+        )
 
 
 def main():
