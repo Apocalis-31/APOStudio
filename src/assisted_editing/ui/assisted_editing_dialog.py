@@ -373,7 +373,7 @@ class AssistedEditingDialog(QDialog):
 
         self.video_fade_in_slider.setRange(
             0,
-            50,
+            150,
         )
 
         self.video_fade_in_slider.setValue(
