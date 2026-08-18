@@ -1,30 +1,27 @@
-🚀 APO Studio v2.0.3
-
-Correctifs mineurs
-
-- Titre de la fenêtre et log de démarrage utilisent maintenant la version dynamique (app_info.VERSION) au lieu d'être hardcodés en "2.0"
-- Documentation de la limitation du patch zip dans AGENTS.md
-
----
-
-🚀 APO Studio v2.0
-
-Refonte complète de l'interface en PySide6 et robustification du pipeline de traitement
+🚀 APO Studio v2.1.0
 
 ✨ Nouveautés
-Interface entièrement réécrite avec PySide6 (remplace tkinter / customtkinter)
-Fenêtre compacte 800x520 avec redimensionnement manuel bloqué (plein écran via Windows)
-Onglets Traitement / File d'attente déplacés sous Progression / Session pour réduire la largeur
-Bouton Stop contextuel, affiché uniquement pendant le traitement
-Console intégrée (journaux du pipeline) et boutons Workflow, Réglages, Préférences IA, Outils, Aide
-Carte « Nouvelle version » au-dessus d'Actions rapides : détection des mises à jour GitHub (patch zip ou installeur) et téléchargement avec barre de progression
-Bump de version à 2.0
+
+🔐 Système Beta Tester
+- Ajout d'un système d'accès Beta Tester pour les fonctionnalités avancées.
+- Activation du code directement depuis les Réglages.
+- L'activation est conservée après redémarrage d'APO Studio.
+
+🎬 Montage Assisté
+- Stabilisation du workflow de Montage Assisté.
+- Amélioration de la préparation et du lancement des épisodes.
+- Amélioration de la gestion des fondus vidéo.
+
+🎞️ Paramètres vidéo
+- Le fondu d'entrée peut désormais aller jusqu'à 15 secondes.
+- Amélioration du rendu des fondus lors de la première passe vidéo.
+
+✂️ Découpage intelligent
+- Le Smart Cut reste disponible pour tous les utilisateurs.
+- Améliorations du workflow de préparation des VOD.
+- Amélioration de la persistance des paramètres et du suivi du traitement.
+
 🔧 Corrections
-Parsing JSON robuste et partagé (json_utils) branché sur GLM, Gemini, OpenAI et NVIDIA (texte + vision)
-Extraction de frames : garde-fous sur les indices, repli cv2 → extraction complète → FFmpeg si captures insuffisantes
-Mécanisme d'arrêt réel corrigé : déduplication des vidéos en échec, propagation de l'annulation et ui.error
-Suppression des journaux de debug résiduels
-⚙️ Architecture
-Nouvelle dépendance PySide6==6.11.1
-Remplacement de la bannière de mise à jour customtkinter par une carte PySide6 native branchée sur le flux zip existant
-Simplification du layout principal (2 colonnes) et du redimensionnement de la fenêtre
+- Correction de problèmes empêchant certaines fenêtres/outils de s'ouvrir correctement après un traitement.
+- Correction de problèmes liés au lancement du Montage Assisté.
+- Diverses corrections et améliorations de stabilité.
