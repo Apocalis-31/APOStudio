@@ -25,3 +25,13 @@
 - Correction de problèmes empêchant certaines fenêtres/outils de s'ouvrir correctement après un traitement.
 - Correction de problèmes liés au lancement du Montage Assisté.
 - Diverses corrections et améliorations de stabilité.
+
+
+
+
+🚀 APO Studio v2.1.1
+
+🔧 Corrections
+- Correction de l'affichage des fenêtres de confirmation et d'information.
+- Harmonisation des QMessageBox avec le thème sombre d'APO Studio.
+- Correction des couleurs des boutons dans la version compilée.
