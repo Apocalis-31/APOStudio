@@ -1126,7 +1126,7 @@ class MainWindow(QMainWindow):
             return
         try:
             from services.update_service import UpdateService
-            info = UpdateService.check()
+            info = UpdateService.check(self.license_manager)
         except Exception as exc:
             self.bridge.log_signal.emit(f"ℹ️ Vérification de mise à jour impossible : {exc}")
             return

@@ -3,6 +3,6 @@ COMPANY = "APO Studio"
 AUTHOR = "Apocalis"
 COPYRIGHT = "© Apocalis"
 
-VERSION = "2.1.1"
+VERSION = "2.1.2"
 GITHUB_OWNER = "Apocalis-31"
 GITHUB_REPOSITORY = "APO-Studio-Pro"
