@@ -27,11 +27,9 @@
 - Diverses corrections et améliorations de stabilité.
 
 
-
-
-🚀 APO Studio v2.1.1
+🚀 APO Studio v2.1.2
 
 🔧 Corrections
-- Correction de l'affichage des fenêtres de confirmation et d'information.
-- Harmonisation des QMessageBox avec le thème sombre d'APO Studio.
-- Correction des couleurs des boutons dans la version compilée.
+- Amélioration du système de distribution des versions Pro.
+- Les installateurs Pro sont désormais publiés sur la Release Community.
+- Amélioration du système de mise à jour pour les versions activées.
