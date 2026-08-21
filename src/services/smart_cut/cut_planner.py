@@ -15,7 +15,7 @@ class CutPlanner:
 
         plans = []
 
-        current_start = 0
+        current_start = 0.0
 
         episode = settings.first_episode
 
@@ -37,9 +37,13 @@ class CutPlanner:
                 * 60
             )
 
-        next_cut = target_duration
-
         tolerance = settings.tolerance * 60
+
+        # Copie de travail :
+        # les candidats utilisés sont retirés au fur et à mesure.
+        remaining_candidates = list(candidates)
+
+        next_cut = target_duration
 
         # -----------------------------------------
         # Recherche des points de coupe
@@ -47,26 +51,69 @@ class CutPlanner:
 
         while next_cut < duration:
 
+            # -------------------------------------
+            # Candidats encore exploitables
+            # -------------------------------------
+
+            valid_candidates = [
+                candidate
+                for candidate in remaining_candidates
+                if candidate.timestamp > current_start
+                and (
+                    candidate.timestamp
+                    + candidate.silence_duration
+                ) <= duration
+            ]
+
+            if not valid_candidates:
+                break
+
+            # -------------------------------------
+            # Sélection du candidat
+            # -------------------------------------
+
             if settings.use_ai:
 
                 candidate = SmartCutAIService().select(
-                    candidates,
-                    next_cut
+                    valid_candidates,
+                    next_cut,
+                    current_start
                 )
 
             else:
 
-
                 candidate = GapSelector().select(
-                    candidates,
+                    valid_candidates,
                     next_cut,
                     tolerance,
                     current_start
                 )
 
-
             if candidate is None:
                 break
+
+            # -------------------------------------
+            # Calcul de la fin
+            # -------------------------------------
+
+            end = (
+                candidate.timestamp
+                + candidate.silence_duration
+            )
+
+            # -------------------------------------
+            # Sécurité
+            # -------------------------------------
+
+            if end <= current_start:
+                break
+
+            if end > duration:
+                end = duration
+
+            # -------------------------------------
+            # Création de l'épisode
+            # -------------------------------------
 
             plans.append(
 
@@ -76,10 +123,7 @@ class CutPlanner:
 
                     start=current_start,
 
-                    end=(
-                        candidate.timestamp
-                        + candidate.silence_duration
-                    ),
+                    end=end,
 
                     target=next_cut,
 
@@ -89,7 +133,15 @@ class CutPlanner:
 
             )
 
-            current_start = candidate.timestamp
+            # -------------------------------------
+            # Candidat consommé
+            # -------------------------------------
+
+            remaining_candidates.remove(candidate)
+
+            # Le prochain épisode commence après
+            # le silence utilisé comme point de coupe.
+            current_start = end
 
             episode += 1
 
@@ -99,22 +151,24 @@ class CutPlanner:
         # Dernier épisode
         # -----------------------------------------
 
-        plans.append(
+        if current_start < duration:
 
-            EpisodePlan(
+            plans.append(
 
-                index=episode,
+                EpisodePlan(
 
-                start=current_start,
+                    index=episode,
 
-                end=duration,
+                    start=current_start,
 
-                target=duration,
+                    end=duration,
 
-                candidate=None
+                    target=duration,
+
+                    candidate=None
+
+                )
 
             )
-
-        )
 
         return plans
