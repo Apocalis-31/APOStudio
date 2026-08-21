@@ -119,12 +119,14 @@ jobs:
         with:
           name: manifest
           path: manifests/manifest_v*.json
+          retention-days: 1
 
       - name: Upload dist (${{ matrix.variant }})
         uses: actions/upload-artifact@v7
         with:
           name: dist-${{ matrix.variant }}
           path: dist/Apo Studio${{ matrix.variant == 'CPU' && ' CPU' || '' }}
+          retention-days: 1
 
       - name: Cache Chocolatey packages
         uses: actions/cache@v4
@@ -146,6 +148,7 @@ jobs:
         with:
           name: installer-${{ matrix.variant }}
           path: installer/output/APOStudio_Setup*.exe
+          retention-days: 1
 
   patch:
     needs: [version, build]
@@ -246,6 +249,7 @@ jobs:
         with:
           name: patch
           path: installer/output/APOStudio_Patch*.zip
+          retention-days: 1
 
   release:
     needs: [version, build, patch]
