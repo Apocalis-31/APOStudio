@@ -75,31 +75,22 @@ class UpdateService:
         download_url = None
         is_patch = False
 
-        is_beta = license_manager.is_beta()
         is_gpu = UpdateService.is_gpu_install()
 
-        if not is_beta:
-            for asset in assets:
-                if "Patch" in asset["name"]:
-                    download_url = asset["browser_download_url"]
-                    is_patch = True
-                    break
+        prefix = "APOStudio_Setup"
 
-        if download_url is None:
-            if is_beta:
-                prefix = "APOStudio_Pro_Setup"
-            else:
-                prefix = "APOStudio_Setup"
+        if is_gpu:
+            target_name = f"{prefix}_GPU"
+        else:
+            target_name = f"{prefix}_CPU"
 
-            target_name = prefix
-
-            if not is_gpu:
-                target_name += "_CPU"
-
-            for asset in assets:
-                if asset["name"].startswith(target_name) and asset["name"].endswith(".exe"):
-                    download_url = asset["browser_download_url"]
-                    break
+        for asset in assets:
+            if (
+                asset["name"].startswith(target_name)
+                and asset["name"].endswith(".exe")
+            ):
+                download_url = asset["browser_download_url"]
+                break
 
         if download_url is None:
             raise RuntimeError(
