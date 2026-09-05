@@ -1,1 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Politique de confidentialité d'APO Studio.">
+<title>Politique de confidentialité — APO Studio</title>
+<style>
+:root{--bg:#101011;--panel:#19191b;--text:#f2f2f3;--muted:#b0b0b5;--accent:#ff5d8e;--border:#303034;--max:900px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.7}
+a{color:var(--accent)}header{border-bottom:1px solid var(--border);background:#151516}
+nav{max-width:var(--max);margin:auto;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:800}
+main{max-width:var(--max);margin:auto;padding:56px 24px 80px}h1{line-height:1.15;margin-bottom:8px}h2{margin-top:42px;font-size:1.45rem}.updated{color:var(--muted);font-size:.95rem}
+.box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin:24px 0}li{margin:8px 0}
+footer{border-top:1px solid var(--border);max-width:var(--max);margin:0 auto;padding:24px;color:var(--muted);font-size:.92rem}
+</style>
+</head>
+<body>
+<header><nav><div class="brand">APO Studio</div><a href="index.html">Accueil</a></nav></header>
+<main>
+<h1>Politique de confidentialité</h1>
+<div class="updated">Dernière mise à jour : 5 septembre 2026</div>
+<div class="box"><strong>En bref :</strong> APO Studio est une application de bureau. Lorsqu'un utilisateur connecte YouTube, l'application utilise Google OAuth 2.0 pour accéder aux données YouTube nécessaires à ses fonctions d'export. Les informations d'authentification sont conservées localement sur l'ordinateur de l'utilisateur et ne sont pas envoyées à un serveur APO Studio.</div>
 
+<h2>1. À propos d'APO Studio</h2>
+<p>APO Studio est une application de bureau destinée à assister les créateurs de contenu dans la préparation, l'analyse et l'export de leurs vidéos. L'application peut proposer une intégration avec YouTube afin de simplifier l'envoi et la programmation de vidéos.</p>
+
+<h2>2. Données Google et YouTube auxquelles APO Studio accède</h2>
+<p>Lorsque vous choisissez de connecter votre compte YouTube, APO Studio demande une autorisation Google OAuth 2.0. L'accès est limité aux fonctionnalités YouTube nécessaires à l'utilisation de l'intégration.</p>
+<p>Selon les fonctionnalités utilisées, APO Studio peut notamment accéder ou agir sur :</p>
+<ul>
+<li>les ressources YouTube nécessaires à l'envoi de vidéos ;</li>
+<li>les informations nécessaires à la programmation de vidéos ;</li>
+<li>les playlists nécessaires à la sélection et à la gestion de l'export ;</li>
+<li>les informations YouTube nécessaires au fonctionnement des fonctions d'export proposées par l'application.</li>
+</ul>
+
+<h2>3. Comment ces données sont utilisées</h2>
+<p>Les données YouTube sont utilisées uniquement pour fournir les fonctionnalités demandées par l'utilisateur dans APO Studio, notamment l'authentification, l'envoi de vidéos et les opérations liées à leur programmation ou à leur organisation.</p>
+<p>APO Studio n'utilise pas les données YouTube pour de la publicité ciblée, de la vente de données ou du profilage publicitaire.</p>
+
+<h2>4. Stockage des données d'authentification</h2>
+<p>APO Studio utilise le mécanisme OAuth de Google. Après l'autorisation, Google fournit à l'application les informations d'identification nécessaires à l'utilisation de l'API.</p>
+<p>Le jeton d'autorisation de l'utilisateur est stocké localement dans les données d'application de l'ordinateur sur lequel APO Studio est installé. APO Studio ne transmet pas ce jeton à un serveur exploité par le développeur.</p>
+
+<h2>5. Partage des données</h2>
+<p>APO Studio ne vend pas les données Google ou YouTube de ses utilisateurs et ne les partage pas avec des tiers à des fins publicitaires.</p>
+<p>Les données sont transmises à Google lorsque cela est nécessaire pour utiliser les API Google/YouTube autorisées par l'utilisateur et réaliser les opérations demandées dans l'application.</p>
+
+<h2>6. Suppression de l'autorisation</h2>
+<p>L'utilisateur peut déconnecter son compte YouTube depuis les réglages d'APO Studio. Cette action supprime le jeton d'autorisation conservé localement par l'application.</p>
+<p>L'utilisateur peut également révoquer l'accès d'APO Studio depuis les paramètres de son compte Google.</p>
+
+<h2>7. Sécurité</h2>
+<p>APO Studio utilise les bibliothèques OAuth de Google pour réaliser le flux d'autorisation. Les informations d'authentification utilisateur sont conservées localement et ne sont pas intégrées dans les fichiers publics du projet.</p>
+
+<h2>8. Services tiers</h2>
+<p>L'intégration YouTube utilise les services Google et l'API YouTube Data API. Leur utilisation reste soumise aux conditions et politiques de Google et de YouTube.</p>
+<p><a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a><br>
+<a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">Conditions d'utilisation de YouTube</a></p>
+
+<h2>9. Modifications de cette politique</h2>
+<p>Cette politique peut être mise à jour lorsque les fonctionnalités d'APO Studio ou son intégration avec les services tiers évoluent. La date de dernière mise à jour affichée en haut de cette page sera alors modifiée.</p>
+
+<h2>10. Contact</h2>
+<p>Pour toute question concernant APO Studio ou cette politique de confidentialité, vous pouvez contacter le développeur via le dépôt GitHub du projet :</p>
+<p><a href="https://github.com/Apocalis-31/APO-Studio-Community/issues" target="_blank" rel="noopener">GitHub — APO Studio Community — Issues</a></p>
+</main>
+<footer><div>© APO Studio</div><div><a href="index.html">Retour à l'accueil</a></div></footer>
+</body>
+</html>
